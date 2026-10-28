@@ -33,14 +33,14 @@ h1{font-family:var(--font-display);font-weight:400;font-size:clamp(30px,7vw,52px
 .meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--ink-soft);border-top:1px solid var(--rule);padding-top:10px}
 .meta b{color:var(--ink);font-variant-numeric:tabular-nums}
 .shelf{background:var(--shelf);border-radius:6px;padding:16px 14px 14px}
-.covers{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.covers{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
 .cover{display:flex;flex-direction:column;gap:8px;color:#fff;text-decoration:none;
   border-radius:3px 6px 6px 3px;padding:10px 10px 12px;box-shadow:inset 6px 0 0 rgba(0,0,0,.18);transition:transform .15s ease}
 .cover:hover{transform:translateY(-4px)}
 .cover:focus-visible{outline:3px solid var(--bulb);outline-offset:3px}
 .cover .top{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.12em;opacity:.9;padding-left:4px}
-.art{background:var(--card);border-radius:2px;aspect-ratio:1/1;max-width:100%;display:grid;place-items:center}
-.art img{width:82%;height:82%}
+.art{background:var(--card);border-radius:2px;aspect-ratio:1200/630;max-width:100%;overflow:hidden}
+.art img{width:100%;height:100%;object-fit:cover;display:block}
 .cover h2{font-family:var(--font-mincho);font-weight:900;font-size:21px;line-height:1.25;margin:2px 0 0 4px;text-wrap:balance}
 .cover p{margin:0 0 0 4px;font-size:12.5px;line-height:1.6;opacity:.92}
 .chip{margin:auto 0 0 4px;align-self:flex-start;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--bulb);color:#1f2430}
@@ -91,7 +91,7 @@ fetch("games.json",{cache:"no-cache"}).then(r=>r.json()).then(list=>{
     a.className="cover";a.href=`${encodeURIComponent(g.id)}.html`;
     a.style.background=g.color||"#4a5463";
     a.innerHTML=`<div class="top"><span>${esc(g.no||"")}</span><span>第${g.vol}巻</span></div>
-      <div class="art"><img src="${encodeURIComponent(g.id)}.svg" alt=""></div>
+      <div class="art"><img src="${encodeURIComponent(g.id)}.png" alt="" loading="lazy"></div>
       <h2>${esc(g.title)}</h2><p>${esc(g.desc||"")}</p><span class="chip">あそぶ ▶</span>`;
     box.appendChild(a);
   });

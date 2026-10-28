@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ハリセン先生｜ひらめき文庫</title>
+<meta name="description" content="居眠りしている生徒が起きた瞬間にハリセンで一撃。反応が速いほど生徒が遠くまで吹っ飛ぶ3D反射神経ゲーム。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひらめき文庫">
+<meta property="og:title" content="ハリセン先生｜ひらめき文庫">
+<meta property="og:description" content="居眠り生徒が起きた瞬間、ハリセンで一撃。速いほど遠くへ吹っ飛ぶ反射神経ゲーム。">
+<meta property="og:url" content="https://hiramekibunko.github.io/hirameki-bunko/harisen.html">
+<meta property="og:image" content="https://hiramekibunko.github.io/hirameki-bunko/harisen.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hiramekibunko.github.io/hirameki-bunko/harisen.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@900&display=swap">
+<style>
+/* 縦長(9:16)の3Dゲーム画面。キャンバスの上に文字(HUD)を重ねる */
+:root{--bg:#0f1115;--screen:#1f2430;--fg:#eef0ea;--line:#343a48;--accent:#ffcf33;
+  --font-display:"Dela Gothic One","Zen Kaku Gothic New",system-ui,sans-serif;
+  --font-body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --font-mincho:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);display:grid;place-items:center;
+  padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.screen{height:min(100%,860px);aspect-ratio:9/16;max-width:100%;background:var(--screen);border-radius:18px;
+  display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+@media (max-width:520px){body{padding:0}.screen{height:100%;width:100%;aspect-ratio:auto;border-radius:0;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}}
+.bar{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.bar a{color:var(--fg);text-decoration:none;font-size:14px;padding:6px 12px;border-radius:99px;background:var(--line)}
+.bar a:focus-visible{outline:2px solid var(--accent)}
+.ttl{font-family:var(--font-mincho);font-weight:900;font-size:18px;margin:0}
+.no{margin-left:auto;font-size:11px;opacity:.6;letter-spacing:.1em}
+
+.stage{flex:1;min-height:0;position:relative;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.stage:focus-visible{outline:3px solid var(--accent);outline-offset:-4px}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.dist{position:absolute;top:12px;left:0;right:0;text-align:center;font-family:var(--font-display);font-size:clamp(26px,8vw,40px);
+  color:#fff;text-shadow:0 2px 0 #1f2430,0 0 12px rgba(0,0,0,.4);font-variant-numeric:tabular-nums;pointer-events:none}
+.hud{position:absolute;left:0;right:0;bottom:0;padding:40px 16px 16px;text-align:center;pointer-events:none;
+  background:linear-gradient(transparent,rgba(15,17,21,.78))}
+.msg{font-family:var(--font-display);font-size:clamp(22px,6vw,30px);letter-spacing:.04em;min-height:1.4em;text-shadow:0 2px 0 #1f2430}
+.rank{font-family:var(--font-mincho);font-weight:900;font-size:16px;color:var(--accent);min-height:1.5em;text-shadow:0 1px 0 #1f2430}
+.actions{display:flex;gap:10px;justify-content:center;margin-top:12px;pointer-events:auto;animation:pop .35s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.actions{animation:none}}
+.btn{font:700 15px var(--font-body);border:0;border-radius:99px;padding:11px 20px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn.x{background:#000;color:#fff;box-shadow:0 0 0 1px #555}
+.btn.again{background:var(--accent);color:#1f2430}
+.mute{all:unset;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:99px;border:1px solid var(--line);white-space:nowrap}
+.mute:focus-visible{outline:2px solid var(--accent)}
+.foot{display:flex;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--line);font-size:13px;opacity:.85;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<main class="screen">
+  <div class="bar">
+    <a href="./">← 棚へ</a>
+    <h1 class="ttl">ハリセン先生</h1>
+    <span class="no">ひ-1-1</span>
+    <button class="mute" id="mute" type="button" aria-pressed="false">音 ON</button>
+  </div>
+  <div class="stage" id="stage" tabindex="0" role="button" aria-label="タップで授業開始">
+    <div class="dist" id="dist"></div>
+    <div class="hud">
+      <div class="msg" id="msg">タップで授業開始</div>
+      <div class="rank" id="rank" aria-live="polite">起きた瞬間に叩くほど遠くへ飛ぶ</div>
+      <div class="actions" id="actions" hidden>
+        <a class="btn x" id="share" href="#" target="_blank" rel="noopener">𝕏 でシェア</a>
+        <button class="btn again" id="again" type="button">もう一度</button>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>自己ベスト <b id="best">―</b></span><span>最長飛距離 <b id="bestD">―</b></span></div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+const stage=document.getElementById("stage"),msg=document.getElementById("msg"),rankEl=document.getElementById("rank"),
+  distEl=document.getElementById("dist"),bestEl=document.getElementById("best"),bestDEl=document.getElementById("bestD");
+if(!window.THREE){msg.textContent="3Dを読み込めませんでした";rankEl.textContent="通信状態を確認して再読み込みしてください";return}
+
+/* ---------- 記録 ---------- */
+let best=null,bestD=null;
+try{best=Number(localStorage.getItem("hb-harisen-best"))||null;bestD=Number(localStorage.getItem("hb-harisen-dist"))||null}catch(e){}
+const showBest=()=>{bestEl.textContent=best?best+" ms":"―";bestDEl.textContent=bestD?bestD.toFixed(1)+" m":"―"};
+showBest();
+
+/* ---------- 音（Web Audioで合成。ファイル不要） ---------- */
+const AC=window.AudioContext||window.webkitAudioContext;
+let ac=null,master,bgmBus,sfxBus,noiseBuf,muted=false,bgmTimer=null;
+try{muted=localStorage.getItem("hb-mute")==="1"}catch(e){}
+const muteBtn=document.getElementById("mute");
+function showMute(){muteBtn.textContent=muted?"音 OFF":"音 ON";muteBtn.setAttribute("aria-pressed",String(muted))}
+showMute();
+function initAudio(){
+  if(!AC)return;
+  if(ac){if(ac.state==="suspended")ac.resume();return}
+  ac=new AC();
+  master=ac.createGain();master.gain.value=muted?0:0.8;master.connect(ac.destination);
+  bgmBus=ac.createGain();bgmBus.gain.value=0.2;bgmBus.connect(master);
+  sfxBus=ac.createGain();sfxBus.gain.value=0.9;sfxBus.connect(master);
+  noiseBuf=ac.createBuffer(1,ac.sampleRate,ac.sampleRate);
+  const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  startBgm();
+}
+muteBtn.addEventListener("pointerdown",e=>e.stopPropagation());
+muteBtn.addEventListener("click",e=>{e.stopPropagation();muted=!muted;showMute();
+  try{localStorage.setItem("hb-mute",muted?"1":"0")}catch(err){}
+  initAudio();if(master)master.gain.setTargetAtTime(muted?0:0.8,ac.currentTime,0.02)});
+function tone(f,t,dur,{type="sine",vol=0.3,to=null,bus=sfxBus,attack=0.005}={}){
+  if(!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.type=type;
+  o.frequency.setValueAtTime(f,t);if(to)o.frequency.exponentialRampToValueAtTime(to,t+dur);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+attack);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g);g.connect(bus);o.start(t);o.stop(t+dur+0.02)}
+function noise(t,dur,{vol=0.3,type="lowpass",f=1000,to=null,q=1,attack=0.005}={}){
+  if(!ac)return;const s=ac.createBufferSource(),fl=ac.createBiquadFilter(),g=ac.createGain();
+  s.buffer=noiseBuf;s.loop=true;fl.type=type;fl.Q.value=q;fl.frequency.setValueAtTime(f,t);
+  if(to)fl.frequency.exponentialRampToValueAtTime(to,t+dur);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+attack);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  s.connect(fl);fl.connect(g);g.connect(sfxBus);s.start(t);s.stop(t+dur+0.02)}
+const now0=()=>ac?ac.currentTime:0;
+const SE={
+  chime(){const t=now0();[659,523,587,392].forEach((f,i)=>{tone(f,t+i*0.42,1.1,{vol:0.22,attack:0.01});tone(f*2,t+i*0.42,0.6,{vol:0.05})})},
+  snore(){const t=now0();noise(t,0.9,{vol:0.12,f:350,to:600,attack:0.35});tone(90,t,0.9,{type:"sawtooth",vol:0.03,attack:0.3})},
+  mumble(){const t=now0();tone(330,t,0.14,{type:"triangle",vol:0.18,to:250});tone(260,t+0.15,0.18,{type:"triangle",vol:0.15,to:200})},
+  wake(){const t=now0();tone(500,t,0.13,{type:"square",vol:0.12,to:1300})},
+  swing(){const t=now0();noise(t,0.13,{vol:0.35,type:"bandpass",f:700,to:3500,q:0.8})},
+  smack(){const t=now0();noise(t,0.22,{vol:0.9,type:"highpass",f:1800,attack:0.001});noise(t,0.12,{vol:0.6,type:"lowpass",f:900,attack:0.001});tone(220,t,0.16,{type:"square",vol:0.25,to:70})},
+  fly(dur){const t=now0();tone(1500,t,Math.max(0.4,dur),{vol:0.12,to:250,attack:0.02})},
+  land(v=1){const t=now0();tone(130,t,0.25,{vol:0.35*v,to:45});noise(t,0.2,{vol:0.3*v,f:400})},
+  thud(){const t=now0();tone(95,t,0.35,{vol:0.5,to:45});noise(t,0.15,{vol:0.3,f:500})},
+  buzz(){const t=now0();tone(160,t,0.28,{type:"square",vol:0.14});tone(160,t+0.32,0.4,{type:"square",vol:0.14})},
+  result(){const t=now0();[523,659,784,1047].forEach((f,i)=>tone(f,t+i*0.09,0.25,{type:"square",vol:0.1}))}
+};
+/* BGM：明るい8小節ループ */
+function startBgm(){
+  const step=60/132/2;
+  const mel=[72,0,74,76,79,0,76,74, 72,0,69,0,67,0,0,0, 69,0,72,74,76,0,74,72, 74,0,76,0,72,0,0,0];
+  const bass=[48,45,41,43];
+  const hz=m=>440*Math.pow(2,(m-69)/12);
+  let i=0,next=ac.currentTime+0.1;
+  bgmTimer=setInterval(()=>{
+    while(next<ac.currentTime+0.3){
+      const m=mel[i%32];if(m)tone(hz(m),next,step*0.9,{type:"square",vol:0.1,bus:bgmBus});
+      if(i%2===0){const b=bass[Math.floor(i/8)%4]+(i%4===2?12:0);tone(hz(b),next,step*1.6,{type:"triangle",vol:0.28,bus:bgmBus})}
+      if(i%4===2)noise(next,0.05,{vol:0.05,type:"highpass",f:6000});
+      i++;next+=step;}
+  },100);
+}
+
+/* ---------- シェアともう一度 ---------- */
+const actions=document.getElementById("actions"),shareA=document.getElementById("share"),againBtn=document.getElementById("again");
+let actionsTimer=null;
+function showActions(text){
+  const url=location.href.split("#")[0];
+  shareA.href="https://twitter.com/intent/tweet?text="+encodeURIComponent(text+"\n#ひらめき文庫 #ハリセン先生")+"&url="+encodeURIComponent(url);
+  clearTimeout(actionsTimer);actionsTimer=setTimeout(()=>{actions.hidden=false},700);
+}
+function hideActions(){clearTimeout(actionsTimer);actions.hidden=true}
+for(const b of[shareA,againBtn])b.addEventListener("pointerdown",e=>e.stopPropagation());
+againBtn.addEventListener("click",e=>{e.stopPropagation();initAudio();start()});
+
+/* ---------- 3Dの準備 ---------- */
+let renderer;
+try{renderer=new THREE.WebGLRenderer({antialias:true})}catch(e){msg.textContent="この端末では3Dが動きませんでした";return}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.shadowMap.enabled=true;
+stage.prepend(renderer.domElement);
+const scene=new THREE.Scene();
+const SKY=0xbfe3f5;
+scene.background=new THREE.Color(SKY);
+scene.fog=new THREE.Fog(SKY,40,170);
+const camera=new THREE.PerspectiveCamera(52,9/16,0.1,400);
+scene.add(new THREE.HemisphereLight(0xffffff,0x8a7a5a,0.75));
+const sun=new THREE.DirectionalLight(0xffffff,0.75);
+sun.position.set(6,12,8);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
+Object.assign(sun.shadow.camera,{left:-8,right:8,top:8,bottom:-8});
+scene.add(sun);scene.add(sun.target);
+
+const mat=c=>new THREE.MeshLambertMaterial({color:c});
+function box(w,h,d,c,x,y,z,parent){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;(parent||scene).add(m);return m}
+function ball(r,c,x,y,z,parent,opts){const g=opts?new THREE.SphereGeometry(r,20,14,0,Math.PI*2,0,opts):new THREE.SphereGeometry(r,20,14);
+  const m=new THREE.Mesh(g,mat(c));m.position.set(x,y,z);m.castShadow=true;(parent||scene).add(m);return m}
+
+/* 文字のテクスチャ */
+function textCanvas(text,{size=110,color="#fff",stroke="#1f2430",font="Dela Gothic One",w=640,h=200,bg=null}={}){
+  const c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");
+  if(bg){g.fillStyle=bg;g.fillRect(0,0,w,h)}
+  g.font=`900 ${size}px "${font}", "Zen Kaku Gothic New", sans-serif`;g.textAlign="center";g.textBaseline="middle";
+  if(stroke){g.lineWidth=size*0.16;g.strokeStyle=stroke;g.lineJoin="round";g.strokeText(text,w/2,h/2)}
+  g.fillStyle=color;g.fillText(text,w/2,h/2);return c}
+function sprite(text,scale,opts){
+  const t=new THREE.CanvasTexture(textCanvas(text,opts));
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,depthTest:false,transparent:true}));
+  s.scale.set(scale,scale*(opts&&opts.h?opts.h:200)/((opts&&opts.w)||640),1);s.renderOrder=10;return s}
+
+/* ---------- 教室と校庭 ---------- */
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(700,240),mat(0x86b86b));
+ground.rotation.x=-Math.PI/2;ground.position.set(-300,-0.02,0);ground.receiveShadow=true;scene.add(ground);
+box(12,0.1,8,0xc8a06a,0,-0.05,0);                 // 床
+box(12,4,0.2,0xe8e2d0,0,2,-4);                    // 後ろの壁
+box(0.2,4,8,0xe8e2d0,6,2,0);                      // 右の壁
+box(0.2,0.7,8,0xe8e2d0,-6,0.35,0);                // 窓の下
+box(0.2,0.6,8,0xe8e2d0,-6,3.7,0);                 // 窓の上
+for(const z of [-3.9,-1.3,1.3,3.9])box(0.24,4,0.16,0xd8d0bc,-6,2,z); // 窓枠
+// 黒板
+const bbCanvas=document.createElement("canvas");bbCanvas.width=1024;bbCanvas.height=360;
+function drawBoard(){const g=bbCanvas.getContext("2d");g.fillStyle="#2f4a3a";g.fillRect(0,0,1024,360);
+  g.fillStyle="#f4f1e6";g.font='900 84px "Zen Old Mincho", serif';g.fillText("三時間目　数学",60,130);
+  g.font='60px "Zen Kaku Gothic New", sans-serif';g.globalAlpha=.8;g.fillText("x² − 5x + 6 = 0",60,260);g.globalAlpha=1}
+drawBoard();
+const bbTex=new THREE.CanvasTexture(bbCanvas);
+box(5.3,2.1,0.08,0x6b4f3a,0.4,2.3,-3.88);
+const board=new THREE.Mesh(new THREE.PlaneGeometry(5,1.8),new THREE.MeshLambertMaterial({map:bbTex}));
+board.position.set(0.4,2.3,-3.83);scene.add(board);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{drawBoard();bbTex.needsUpdate=true});
+
+function desk(x,z){box(1.3,0.08,0.75,0xb07a45,x,0.78,z);
+  for(const dx of[-0.58,0.58])for(const dz of[-0.3,0.3])box(0.06,0.76,0.06,0x8a5e33,x+dx,0.38,z+dz);}
+function chair(x,z){box(0.6,0.06,0.6,0xa06d3c,x,0.45,z);box(0.6,0.55,0.06,0xa06d3c,x,0.75,z-0.3);
+  for(const dx of[-0.25,0.25])for(const dz of[-0.25,0.25])box(0.05,0.45,0.05,0x5a5f6a,x+dx,0.22,z+dz);}
+desk(0,0.75);chair(0,0);
+desk(-2.6,0.75);chair(-2.6,0);desk(-2.6,-2);chair(-2.6,-2.75);desk(0,-2);chair(0,-2.75);
+
+// 校庭：木と距離の看板
+for(let i=0;i<60;i++){const x=-12-Math.random()*190,z=(Math.random()<.5?-1:1)*(5+Math.random()*12);
+  const tr=new THREE.Group();tr.position.set(x,0,z);scene.add(tr);
+  box(0.25,1.2,0.25,0x7a5434,0,0.6,0,tr);
+  const cone=new THREE.Mesh(new THREE.ConeGeometry(1.1,2.6,8),mat(0x4f8a4a));cone.position.y=2.4;cone.castShadow=true;tr.add(cone);}
+for(let d=10;d<=200;d+=10){box(0.08,1.4,0.08,0xffffff,-d,0.7,-1.8);
+  const s=sprite(d+"m",2.4,{size:120,color:"#fff"});s.material.depthTest=true;s.renderOrder=0;s.position.set(-d,1.9,-1.8);scene.add(s);}
+
+/* ---------- 生徒 ---------- */
+const SKIN=0xf2d3b5,NAVY=0x2b3550,HAIR=0x222222;
+const student=new THREE.Group();scene.add(student);
+const SEAT=new THREE.Vector3(0,0.5,0);
+box(0.5,0.18,0.55,NAVY,0,0,0.22,student);                       // 太もも
+for(const x of[-0.13,0.13])box(0.16,0.48,0.16,NAVY,x,-0.25,0.5,student); // すね
+const upper=new THREE.Group();student.add(upper);
+box(0.62,0.72,0.36,NAVY,0,0.42,0,upper);                        // 胴
+box(0.2,0.24,0.37,0xffffff,0,0.68,0.01,upper);                   // 襟
+const head=new THREE.Group();head.position.set(0,0.98,0);upper.add(head);
+ball(0.26,SKIN,0,0,0,head);
+const hair=ball(0.28,HAIR,0,0.03,-0.02,head,Math.PI*0.48);
+const eyesOpen=new THREE.Group(),eyesShut=new THREE.Group();head.add(eyesOpen);head.add(eyesShut);
+for(const x of[-0.09,0.09]){ball(0.04,0x1f2430,x,0.02,0.235,eyesOpen);box(0.09,0.015,0.02,0x1f2430,x,0.0,0.25,eyesShut);}
+const mouth=ball(0.035,0x7a2e2e,0,-0.12,0.235,head);
+const arms=[];
+for(const x of[-0.4,0.4]){const a=new THREE.Group();a.position.set(x,0.7,0);upper.add(a);box(0.15,0.55,0.15,NAVY,0,-0.27,0,a);ball(0.08,SKIN,0,-0.56,0,a);arms.push(a);}
+
+/* ---------- 先生 ---------- */
+const teacher=new THREE.Group();teacher.position.set(1.35,0,0);scene.add(teacher);
+const GRAY=0x56677a;
+for(const z of[-0.12,0.12])box(0.18,0.8,0.18,0x3b4654,0,0.4,z,teacher);
+box(0.5,0.85,0.55,GRAY,0,1.22,0,teacher);
+box(0.02,0.4,0.12,0xffffff,-0.26,1.4,0,teacher);box(0.03,0.32,0.06,0xb2433a,-0.27,1.38,0,teacher);
+const tHead=new THREE.Group();tHead.position.set(0,1.92,0);teacher.add(tHead);
+ball(0.26,SKIN,0,0,0,tHead);
+const tHair=ball(0.28,0x5a5a5a,0,0.04,0,tHead,Math.PI*0.42);
+for(const z of[-0.09,0.09]){const g=new THREE.Mesh(new THREE.TorusGeometry(0.065,0.012,8,20),mat(0x1f2430));g.position.set(-0.25,0.02,z);g.rotation.y=Math.PI/2;tHead.add(g);}
+box(0.02,0.02,0.05,0x1f2430,-0.25,0.02,0,tHead);
+box(0.15,0.55,0.15,GRAY,0,1.25,-0.33,teacher);                  // 左腕（下ろしたまま）
+const arm=new THREE.Group();arm.position.set(-0.05,1.58,0.34);teacher.add(arm);
+box(0.15,0.62,0.15,GRAY,0,0.31,0,arm);ball(0.08,SKIN,0,0.64,0,arm);
+// ハリセン：蛇腹の模様を描いたテクスチャ
+const fc=document.createElement("canvas");fc.width=128;fc.height=256;{const g=fc.getContext("2d");g.fillStyle="#fafaf5";g.fillRect(0,0,128,256);
+  g.strokeStyle="#9aa0aa";g.lineWidth=3;for(let x=8;x<128;x+=16){g.beginPath();g.moveTo(x,0);g.lineTo(x,256);g.stroke()}}
+const fan=new THREE.Mesh(new THREE.BoxGeometry(0.05,1.0,0.42),[mat(0xfafaf5),mat(0xfafaf5),mat(0xfafaf5),mat(0xfafaf5),
+  new THREE.MeshLambertMaterial({map:new THREE.CanvasTexture(fc)}),new THREE.MeshLambertMaterial({map:new THREE.CanvasTexture(fc)})]);
+fan.position.set(0,1.25,0);fan.castShadow=true;arm.add(fan);
+box(0.08,0.2,0.16,0xb2433a,0,0.72,0,arm);
+const ARM_UP=0.35,ARM_HIT=1.7;
+
+/* ---------- 演出用スプライト ---------- */
+const fx=[];
+function addFx(s,life,vy=0){scene.add(s);fx.push({s,life,t:0,vy});return s}
+function clearFx(){for(const f of fx)scene.remove(f.s);fx.length=0}
+let mumble=null,bang=null;
+
+/* ---------- 状態 ---------- */
+let state="loading",timers=[],wokeAt=0,lastMs=0;
+const later=(fn,ms)=>timers.push(setTimeout(fn,ms));
+const clearAll=()=>{timers.forEach(clearTimeout);timers=[]};
+const pose={upper:1.0,arm:ARM_UP,armSpeed:10,head:0.25};
+const fly={on:false,v:new THREE.Vector3(),w:new THREE.Vector3(),bounces:0,hop:false};
+const CAM_HOME=new THREE.Vector3(1.7,2.6,6.0),LOOK_HOME=new THREE.Vector3(0.45,1.05,0.2);
+const camLook=LOOK_HOME.clone();
+let follow=false,hitStop=0;
+
+function setEyes(open){eyesOpen.visible=open;eyesShut.visible=!open}
+function resetStudent(){
+  fly.on=false;fly.hop=false;student.position.copy(SEAT);student.rotation.set(0,0,0);
+  pose.upper=1.0;upper.rotation.x=1.0;pose.head=0.25;setEyes(false);
+  arms.forEach(a=>a.rotation.x=-2.6);
+  pose.arm=ARM_UP;pose.armSpeed=10;arm.rotation.z=ARM_UP;
+  follow=false;distEl.textContent="";clearFx();
+}
+function sleepPose(){pose.upper=1.0;pose.head=0.25;setEyes(false);arms.forEach(a=>a.rotation.x=-2.6)}
+function wakePose(){pose.upper=-0.05;pose.head=0;setEyes(true);arms.forEach(a=>a.rotation.x=-0.25)}
+
+function start(){
+  clearAll();resetStudent();hideActions();state="wait";msg.textContent="……";rankEl.textContent="生徒が起きた瞬間にタップ";
+  SE.chime();
+  const snoreLoop=()=>{if(state!=="wait")return;SE.snore();later(snoreLoop,1700)};later(snoreLoop,1800);
+  const wake=2000+Math.random()*3500;
+  const fakes=Math.floor(Math.random()*3);
+  for(let i=0;i<fakes;i++){
+    const t=700+Math.random()*(wake-1300);
+    later(()=>{if(state!=="wait")return;pose.upper=0.7;pose.head=0.1;SE.mumble();
+      mumble=addFx(sprite("むにゃ…",1.3,{size:100,color:"#1f2430",stroke:"#fff",font:"Zen Kaku Gothic New"}),0.6);
+      mumble.position.set(0.4,1.9,0.8);
+      later(()=>{if(state==="wait"){pose.upper=1.0;pose.head=0.25}},500)},t);
+  }
+  later(()=>{
+    state="awake";wakePose();SE.wake();msg.textContent="起きた！";wokeAt=performance.now();
+    const ex=addFx(sprite("！",0.9,{size:150,color:"#e0483c",w:220,h:220}),9);ex.position.set(0.15,2.0,0.2);
+    later(()=>{if(state==="awake"){state="done";msg.textContent="遅い！";rankEl.textContent="生徒は完全に目が覚めた";clearFx();SE.buzz();
+      showActions("ハリセン先生で叩きそびれた…生徒は完全に目が覚めた。");}},1500);
+  },wake);
+}
+function swing(){pose.arm=ARM_HIT;pose.armSpeed=45;SE.swing()}
+
+function launch(ms){
+  // 反応が速いほど強く飛ぶ：150msで最大、450ms以上でほぼ飛ばない
+  const k=Math.max(0,Math.min(1,(450-ms)/300));
+  const speed=4+k*k*36;
+  const ang=(28+k*12)*Math.PI/180;
+  fly.v.set(-Math.cos(ang)*speed,Math.sin(ang)*speed,(Math.random()-.5)*speed*0.08);
+  fly.w.set((Math.random()-.5)*6,(Math.random()-.5)*4,4+speed*0.5);
+  fly.on=true;fly.bounces=0;follow=true;SE.fly(2*fly.v.y/20);
+  pose.upper=-0.4;arms.forEach(a=>a.rotation.x=-2.6);
+}
+function finishFlight(){
+  fly.on=false;state="done";
+  const d=Math.max(0,-student.position.x);
+  distEl.textContent=d.toFixed(1)+" m";
+  msg.textContent=`${lastMs} ms`;
+  let r=lastMs<200?"伝説の生活指導":lastMs<260?"鬼の学年主任":lastMs<350?"ふつうの先生":"優しすぎる先生";
+  let upd=[];
+  if(!best||lastMs<best){best=lastMs;upd.push("反応");try{localStorage.setItem("hb-harisen-best",best)}catch(e){}}
+  if(!bestD||d>bestD){bestD=d;upd.push("飛距離");try{localStorage.setItem("hb-harisen-dist",bestD)}catch(e){}}
+  showBest();
+  rankEl.textContent=r+(upd.length?`　${upd.join("・")}ベスト更新！`:"");
+  SE.result();
+  showActions(`ハリセン先生で起きた瞬間の生徒を ${lastMs}ms で一撃！\n生徒は ${d.toFixed(1)}m 吹っ飛んだ【${r}】`);
+}
+
+function press(){
+  if(state==="loading")return;
+  if(state==="idle"){start();return}
+  if(state==="done")return;
+  if(state==="wait"){
+    clearAll();state="foul";swing();
+    later(()=>{const b=addFx(sprite("ゴンッ",1.6,{size:120,color:"#fff",stroke:"#1f2430"}),1.2,0.4);b.position.set(0.1,1.8,0.8);
+      setEyes(true);pose.upper=0.4;fly.hop=true;fly.v.set(0,2.2,0);SE.thud();},70);
+    later(()=>{state="done";msg.textContent="まだ寝てた！";rankEl.textContent="寝ている生徒を叩いて職員会議行き";
+      showActions("ハリセン先生で寝ている生徒を叩いてしまい、職員会議行きになりました。");},420);
+    return;
+  }
+  if(state==="awake"){
+    clearAll();lastMs=Math.round(performance.now()-wokeAt);state="hit";swing();clearFx();
+    msg.textContent="";rankEl.textContent="";
+    later(()=>{
+      hitStop=0.09;SE.smack();
+      bang=addFx(sprite("スパーン！",2.6,{size:120,color:"#e0483c",stroke:"#fff"}),1.4,0.3);bang.position.set(0.2,2.3,0.6);
+      for(let i=0;i<5;i++){const st=addFx(sprite("★",0.5,{size:150,color:"#ffcf33",stroke:"#1f2430",w:200,h:200}),0.9,1.5+Math.random());
+        st.position.set(0.1+(Math.random()-.5)*0.8,1.5+Math.random()*0.5,0.3+(Math.random()-.5)*0.6);}
+      launch(lastMs);
+    },70);
+  }
+}
+stage.addEventListener("pointerdown",e=>{e.preventDefault();initAudio();press()});
+stage.addEventListener("keydown",e=>{if(e.target!==stage)return;if(e.code==="Space"||e.code==="Enter"){e.preventDefault();initAudio();if(state==="done")start();else press()}});
+
+/* ---------- 毎フレームの更新 ---------- */
+const GRAV=20;
+const tmp=new THREE.Vector3();
+let last=performance.now();
+function tick(now){
+  let dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(hitStop>0){hitStop-=dt;dt=0}
+  const ease=(r)=>1-Math.exp(-dt*r);
+  upper.rotation.x+=(pose.upper-upper.rotation.x)*ease(12);
+  head.rotation.x+=(pose.head-head.rotation.x)*ease(12);
+  arm.rotation.z+=(pose.arm-arm.rotation.z)*ease(pose.armSpeed);
+
+  if(fly.on){
+    fly.v.y-=GRAV*dt;student.position.addScaledVector(fly.v,dt);
+    student.rotation.x+=fly.w.x*dt;student.rotation.y+=fly.w.y*dt;student.rotation.z+=fly.w.z*dt;
+    if(student.position.y<=0.25&&fly.v.y<0){
+      student.position.y=0.25;
+      if(fly.bounces<2&&Math.abs(fly.v.y)>2){SE.land(Math.min(1,Math.abs(fly.v.y)/15));fly.v.y*=-0.35;fly.v.x*=0.55;fly.v.z*=0.55;fly.w.multiplyScalar(0.4);fly.bounces++;}
+      else{fly.v.y=0;fly.v.x*=Math.pow(0.02,dt);fly.v.z*=Math.pow(0.02,dt);fly.w.multiplyScalar(Math.pow(0.01,dt));
+        // 着地後は横倒しで止まる
+        student.rotation.x+=(0-student.rotation.x)*ease(6);student.rotation.z+=(Math.PI/2-student.rotation.z%(Math.PI*2))*ease(6);
+        if(Math.hypot(fly.v.x,fly.v.z)<0.15)finishFlight();}
+    }
+    if(state==="hit")distEl.textContent=Math.max(0,-student.position.x).toFixed(1)+" m";
+  }else if(fly.hop){
+    fly.v.y-=GRAV*dt;student.position.y+=fly.v.y*dt;
+    if(student.position.y<=SEAT.y){student.position.y=SEAT.y;fly.hop=false}
+  }
+
+  for(let i=fx.length-1;i>=0;i--){const f=fx[i];f.t+=dt;f.s.position.y+=f.vy*dt;
+    f.s.material.opacity=Math.max(0,1-Math.max(0,f.t-f.life*0.6)/(f.life*0.4));
+    if(f.t>=f.life){scene.remove(f.s);fx.splice(i,1)}}
+
+  // カメラ：飛んでいる間は生徒を追いかける
+  const target=follow?tmp.copy(student.position):LOOK_HOME;
+  const camGoal=follow?tmp.clone().add(new THREE.Vector3(4.2,2.6,7.5)):CAM_HOME;
+  camera.position.lerp(camGoal,ease(follow?5:4));
+  camLook.lerp(target,ease(follow?8:4));
+  camera.lookAt(camLook);
+  sun.position.set(camLook.x+6,12,8);sun.target.position.copy(camLook);
+
+  renderer.render(scene,camera);
+  requestAnimationFrame(tick);
+}
+function resize(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;
+  renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix()}
+new ResizeObserver(resize).observe(stage);resize();
+resetStudent();camera.position.copy(CAM_HOME);camera.lookAt(LOOK_HOME);
+state="idle";
+requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
