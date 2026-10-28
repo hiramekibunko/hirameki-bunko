@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>夜中のトイレ｜ひらめき文庫</title>
+<meta name="description" content="雷が光った3秒で間取りを覚えて、真っ暗な家をトイレまで。漏れる前にたどり着け。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひらめき文庫">
+<meta property="og:title" content="夜中のトイレ｜ひらめき文庫">
+<meta property="og:description" content="雷が光った3秒で間取りを覚えて、真っ暗な家をトイレまで。漏れる前にたどり着け。">
+<meta property="og:url" content="https://hiramekibunko.github.io/hirameki-bunko/toire.html">
+<meta property="og:image" content="https://hiramekibunko.github.io/hirameki-bunko/toire.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hiramekibunko.github.io/hirameki-bunko/toire.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@900&display=swap">
+<style>
+/* 縦長(9:16)の3D画面：上に尿意ゲージ、中央に暗い家、下に十字キー */
+:root{--bg:#07080d;--screen:#151826;--fg:#eef0ea;--line:#2c3046;--accent:#ffcf33;--glow:#7dffb0;--danger:#ff5a4a;
+  --font-display:"Dela Gothic One","Zen Kaku Gothic New",system-ui,sans-serif;
+  --font-body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --font-mincho:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);display:grid;place-items:center;
+  padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.screen{height:min(100%,860px);aspect-ratio:9/16;max-width:100%;background:var(--screen);border-radius:18px;
+  display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+@media (max-width:520px){body{padding:0}.screen{height:100%;width:100%;aspect-ratio:auto;border-radius:0;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}}
+.bar{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.bar a{color:var(--fg);text-decoration:none;font-size:14px;padding:6px 12px;border-radius:99px;background:var(--line)}
+.bar a:focus-visible,.mute:focus-visible{outline:2px solid var(--accent)}
+.ttl{font-family:var(--font-mincho);font-weight:900;font-size:18px;margin:0}
+.no{margin-left:auto;font-size:11px;opacity:.6;letter-spacing:.1em}
+.mute{all:unset;cursor:pointer;font-size:12px;padding:5px 10px;border-radius:99px;border:1px solid var(--line);white-space:nowrap}
+
+.stage{flex:1;min-height:0;position:relative;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none;background:#05060b}
+.stage:focus-visible{outline:3px solid var(--accent);outline-offset:-4px}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.flash{position:absolute;inset:0;background:#eef3ff;opacity:0;pointer-events:none}
+.top{position:absolute;top:10px;left:12px;right:12px;display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;pointer-events:none;font-variant-numeric:tabular-nums}
+.top .lab{font-size:12px;font-weight:700;letter-spacing:.1em;text-shadow:0 1px 2px #000}
+.meter{height:12px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+.meter i{display:block;height:100%;width:25%;background:var(--glow);border-radius:99px;transition:background .3s}
+.top .time{font-family:var(--font-display);font-size:18px;text-shadow:0 1px 2px #000;min-width:4.2em;text-align:right}
+.top .best{grid-column:1/-1;justify-self:end;font-size:11px;opacity:.75;text-shadow:0 1px 2px #000}
+.count{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-display);font-size:min(28vw,140px);color:#fff;
+  text-shadow:0 4px 0 #1f2430,0 0 24px rgba(0,0,0,.4);pointer-events:none}
+.hud{position:absolute;left:0;right:0;bottom:0;padding:40px 16px 14px;text-align:center;pointer-events:none;
+  background:linear-gradient(transparent,rgba(5,6,11,.85))}
+.msg{font-family:var(--font-display);font-size:clamp(20px,5.6vw,28px);letter-spacing:.04em;min-height:1.4em;text-shadow:0 2px 0 #000}
+.rank{font-family:var(--font-mincho);font-weight:900;font-size:15px;color:var(--accent);min-height:1.5em;text-shadow:0 1px 0 #000}
+.actions{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:10px;pointer-events:auto;animation:pop .35s ease-out}
+.actions .row{display:flex;gap:10px;justify-content:center}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.btn{font:700 15px var(--font-body);border:0;border-radius:99px;padding:11px 20px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn:focus-visible,.support:focus-visible,.pad button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn.x{background:#000;color:#fff;box-shadow:0 0 0 1px #555}
+.btn.again{background:var(--accent);color:#1f2430}
+.support{font-size:12px;color:var(--fg);opacity:.7;text-decoration:underline;text-underline-offset:3px}
+
+.pad{flex:0 0 auto;display:grid;grid-template-columns:repeat(3,58px);grid-template-rows:repeat(2,52px);gap:6px;justify-content:center;
+  padding:12px 0 14px;border-top:1px solid var(--line);background:#11131d}
+.pad button{border:0;border-radius:14px;background:#262a3d;color:var(--fg);font-size:22px;cursor:pointer;touch-action:none;
+  box-shadow:0 3px 0 #0b0c12;-webkit-tap-highlight-color:transparent}
+.pad button:active{transform:translateY(2px);box-shadow:0 1px 0 #0b0c12;background:#323750}
+.pad .u{grid-column:2;grid-row:1}.pad .l{grid-column:1;grid-row:2}.pad .d{grid-column:2;grid-row:2}.pad .r{grid-column:3;grid-row:2}
+.pad.off button{opacity:.35}
+@media (prefers-reduced-motion:reduce){.actions{animation:none}}
+</style>
+</head>
+<body>
+<main class="screen">
+  <div class="bar">
+    <a href="./">← 棚へ</a>
+    <h1 class="ttl">夜中のトイレ</h1>
+    <span class="no">ひ-1-2</span>
+    <button class="mute" id="mute" type="button" aria-pressed="false">音 ON</button>
+  </div>
+  <div class="stage" id="stage" tabindex="0" role="application" aria-label="夜中のトイレ。タップで開始、矢印キーやスワイプで移動">
+    <div class="flash" id="flash"></div>
+    <div class="top">
+      <span class="lab">尿意</span>
+      <div class="meter" role="meter" aria-label="尿意" aria-valuemin="0" aria-valuemax="100"><i id="bar"></i></div>
+      <span class="time" id="time">0.00</span>
+      <span class="best">自己ベスト <b id="best">―</b></span>
+    </div>
+    <div class="count" id="count"></div>
+    <div class="hud">
+      <div class="msg" id="msg">タップで目を覚ます</div>
+      <div class="rank" id="rank" aria-live="polite">雷が光る3秒で間取りを覚えろ</div>
+      <div class="actions" id="actions" hidden>
+        <div class="row">
+          <a class="btn x" id="share" href="#" target="_blank" rel="noopener">𝕏 でシェア</a>
+          <button class="btn again" id="again" type="button">もう一度</button>
+        </div>
+        <a class="support" href="https://ofuse.me/0825d42b" target="_blank" rel="noopener">☕ ひらめき文庫に差し入れ</a>
+      </div>
+    </div>
+  </div>
+  <div class="pad off" id="pad" aria-label="移動">
+    <button class="u" type="button" data-d="u" aria-label="上">▲</button>
+    <button class="l" type="button" data-d="l" aria-label="左">◀</button>
+    <button class="d" type="button" data-d="d" aria-label="下">▼</button>
+    <button class="r" type="button" data-d="r" aria-label="右">▶</button>
+  </div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const stage=$("stage"),msg=$("msg"),rankEl=$("rank"),barEl=$("bar"),timeEl=$("time"),bestEl=$("best"),countEl=$("count"),
+  flashEl=$("flash"),pad=$("pad"),actions=$("actions"),shareA=$("share"),againBtn=$("again"),muteBtn=$("mute");
+if(!window.THREE){msg.textContent="3Dを読み込めませんでした";rankEl.textContent="通信状態を確認して再読み込みしてください";return}
+
+/* ---------- 記録 ---------- */
+let best=null;
+try{best=Number(localStorage.getItem("hb-toire-best"))||null}catch(e){}
+const showBest=()=>bestEl.textContent=best?best.toFixed(2)+" 秒":"―";
+showBest();
+
+/* ---------- 音（Web Audioで合成） ---------- */
+const AC=window.AudioContext||window.webkitAudioContext;
+let ac=null,master,bgmBus,sfxBus,noiseBuf,muted=false;
+try{muted=localStorage.getItem("hb-mute")==="1"}catch(e){}
+function showMute(){muteBtn.textContent=muted?"音 OFF":"音 ON";muteBtn.setAttribute("aria-pressed",String(muted))}
+showMute();
+function initAudio(){
+  if(!AC)return;
+  if(ac){if(ac.state==="suspended")ac.resume();return}
+  ac=new AC();
+  master=ac.createGain();master.gain.value=muted?0:0.85;master.connect(ac.destination);
+  bgmBus=ac.createGain();bgmBus.gain.value=0.22;bgmBus.connect(master);
+  sfxBus=ac.createGain();sfxBus.gain.value=0.9;sfxBus.connect(master);
+  noiseBuf=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);
+  const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  startBgm();
+}
+muteBtn.addEventListener("pointerdown",e=>e.stopPropagation());
+muteBtn.addEventListener("click",e=>{e.stopPropagation();muted=!muted;showMute();
+  try{localStorage.setItem("hb-mute",muted?"1":"0")}catch(err){}
+  initAudio();if(master)master.gain.setTargetAtTime(muted?0:0.85,ac.currentTime,0.02)});
+function tone(f,t,dur,{type="sine",vol=0.3,to=null,bus=sfxBus,attack=0.005}={}){
+  if(!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.type=type;
+  o.frequency.setValueAtTime(f,t);if(to)o.frequency.exponentialRampToValueAtTime(to,t+dur);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+attack);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g);g.connect(bus);o.start(t);o.stop(t+dur+0.02)}
+function noise(t,dur,{vol=0.3,type="lowpass",f=1000,to=null,q=1,attack=0.005,bus=sfxBus}={}){
+  if(!ac)return;const s=ac.createBufferSource(),fl=ac.createBiquadFilter(),g=ac.createGain();
+  s.buffer=noiseBuf;s.loop=true;fl.type=type;fl.Q.value=q;fl.frequency.setValueAtTime(f,t);
+  if(to)fl.frequency.exponentialRampToValueAtTime(to,t+dur);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+attack);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  s.connect(fl);fl.connect(g);g.connect(bus);s.start(t);s.stop(t+dur+0.02)}
+const T0=()=>ac?ac.currentTime:0;
+const SE={
+  crack(){const t=T0();noise(t,0.35,{vol:0.9,type:"highpass",f:2500,attack:0.001});noise(t+0.05,2.6,{vol:0.6,f:220,to:70,attack:0.08})},
+  rumble(){const t=T0();noise(t,2.2,{vol:0.35,f:160,to:60,attack:0.4})},
+  step(){const t=T0();noise(t,0.06,{vol:0.12,f:500,attack:0.002});tone(110,t,0.06,{vol:0.06})},
+  bump(){const t=T0();tone(120,t,0.2,{vol:0.45,to:55});noise(t,0.1,{vol:0.25,f:600})},
+  koyubi(){const t=T0();tone(140,t,0.18,{vol:0.5,to:60});noise(t,0.12,{vol:0.4,f:900});
+    tone(700,t+0.12,0.55,{type:"sawtooth",vol:0.12,to:1500,attack:0.02});tone(1500,t+0.62,0.4,{type:"sawtooth",vol:0.08,to:600})},
+  lego(){const t=T0();for(let i=0;i<3;i++)tone(2400+i*500,t+i*0.03,0.05,{type:"square",vol:0.12});tone(900,t+0.1,0.5,{type:"sawtooth",vol:0.1,to:1800,attack:0.02})},
+  cat(){const t=T0();tone(600,t,0.18,{type:"sawtooth",vol:0.15,to:1100,attack:0.02});tone(1100,t+0.18,0.4,{type:"sawtooth",vol:0.13,to:500})},
+  door(){const t=T0();tone(90,t,0.45,{type:"sawtooth",vol:0.08,to:140,attack:0.05})},
+  flush(){const t=T0()+0.35;noise(t,1.8,{vol:0.45,type:"bandpass",f:500,to:2400,q:0.6,attack:0.08});noise(t+0.6,1.4,{vol:0.25,f:900,to:250,attack:0.2})},
+  fail(){const t=T0();[392,370,349,330].forEach((f,i)=>tone(f,t+i*0.32,0.5,{type:"triangle",vol:0.25}));noise(t+1.3,1.4,{vol:0.2,f:700,attack:0.3})},
+  result(){const t=T0();[523,659,784,1047].forEach((f,i)=>tone(f,t+i*0.09,0.25,{type:"square",vol:0.1}))},
+  yawn(){const t=T0();tone(330,t,0.7,{type:"triangle",vol:0.12,to:200,attack:0.15})}
+};
+/* BGM：しのび足のピチカート。尿意が上がるほどテンポが速くなる。虫の声つき */
+let urgency=0,playing=false;
+function startBgm(){
+  const seq=[45,0,52,0,48,0,52,0, 45,0,52,0,53,0,52,0, 43,0,50,0,47,0,50,0, 44,0,52,0,47,0,0,0];
+  const hz=m=>440*Math.pow(2,(m-69)/12);
+  let i=0,next=ac.currentTime+0.15,cricket=ac.currentTime+0.5;
+  setInterval(()=>{
+    const bpm=playing?92+urgency*110:84;const step=60/bpm/2;
+    while(next<ac.currentTime+0.3){
+      const m=seq[i%32];
+      if(m){tone(hz(m),next,0.16,{type:"triangle",vol:0.32,bus:bgmBus,attack:0.003});
+        if(playing&&urgency>0.55&&i%4===0)tone(hz(m+24),next,0.08,{type:"square",vol:0.05,bus:bgmBus});}
+      if(playing&&i%8===0)tone(55,next,0.12,{vol:0.25*(0.4+urgency),bus:bgmBus});
+      i++;next+=step;}
+    while(cricket<ac.currentTime+0.3){
+      if(!playing||Math.random()<0.6){for(let k=0;k<3;k++)tone(4300,cricket+k*0.045,0.03,{vol:0.03,bus:bgmBus})}
+      cricket+=0.5+Math.random()*1.2;}
+  },100);
+}
+
+/* ---------- シェア・もう一度 ---------- */
+let actionsTimer=null;
+function showActions(text){
+  const url=location.href.split("#")[0];
+  shareA.href="https://twitter.com/intent/tweet?text="+encodeURIComponent(text+"\n#ひらめき文庫 #夜中のトイレ")+"&url="+encodeURIComponent(url);
+  clearTimeout(actionsTimer);actionsTimer=setTimeout(()=>{actions.hidden=false},700);
+}
+function hideActions(){clearTimeout(actionsTimer);actions.hidden=true}
+for(const b of actions.querySelectorAll("a,button"))b.addEventListener("pointerdown",e=>e.stopPropagation());
+againBtn.addEventListener("click",e=>{e.stopPropagation();initAudio();start()});
+
+/* ---------- 3D ---------- */
+let renderer;
+try{renderer=new THREE.WebGLRenderer({antialias:true})}catch(e){msg.textContent="この端末では3Dが動きませんでした";return}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+stage.prepend(renderer.domElement);
+const scene=new THREE.Scene();
+const NIGHT=0x05060b;
+scene.background=new THREE.Color(NIGHT);
+const fog=new THREE.Fog(NIGHT,2.2,5.6);scene.fog=fog;
+const camera=new THREE.PerspectiveCamera(50,9/16,0.1,200);
+const hemi=new THREE.HemisphereLight(0x8a96ff,0x1a1a22,0.06);scene.add(hemi);
+const moon=new THREE.DirectionalLight(0x7d8cff,0.12);moon.position.set(-4,10,6);scene.add(moon);
+const eyeLight=new THREE.PointLight(0xffe2b8,1.0,4.8,2);scene.add(eyeLight);
+
+const mat=(c,o)=>new THREE.MeshLambertMaterial(Object.assign({color:c},o||{}));
+function box(w,h,d,c,x,y,z,parent){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));m.position.set(x,y,z);(parent||scene).add(m);return m}
+function ball(r,c,x,y,z,parent){const m=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),mat(c));m.position.set(x,y,z);(parent||scene).add(m);return m}
+function textCanvas(text,{size=110,color="#fff",stroke="#1f2430",font="Dela Gothic One",w=640,h=200}={}){
+  const c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");
+  g.font=`900 ${size}px "${font}", "Zen Kaku Gothic New", sans-serif`;g.textAlign="center";g.textBaseline="middle";
+  if(stroke){g.lineWidth=size*0.16;g.strokeStyle=stroke;g.lineJoin="round";g.strokeText(text,w/2,h/2)}
+  g.fillStyle=color;g.fillText(text,w/2,h/2);return c}
+function sprite(text,scale,opts){opts=opts||{};
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(textCanvas(text,opts)),depthTest:false,transparent:true,fog:false}));
+  s.scale.set(scale,scale*(opts.h||200)/(opts.w||640),1);s.renderOrder=10;return s}
+const glowTex=(()=>{const c=document.createElement("canvas");c.width=c.height=128;const g=c.getContext("2d");
+  const gr=g.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,"rgba(190,255,215,1)");gr.addColorStop(.25,"rgba(125,255,176,.6)");gr.addColorStop(1,"rgba(125,255,176,0)");
+  g.fillStyle=gr;g.fillRect(0,0,128,128);return new THREE.CanvasTexture(c)})();
+
+/* ---------- 家（迷路）の生成 ---------- */
+const W=5,H=7,TS=2;
+let walls,tansu,start0,goal,hazards,houseGroup=null,catMesh=null,toiletLight=null,glow=null;
+const DIRS={u:[0,-1,"n","s"],d:[0,1,"s","n"],l:[-1,0,"w","e"],r:[1,0,"e","w"]};
+const cellPos=(cx,cy)=>new THREE.Vector3((cx-(W-1)/2)*TS,0,(cy-(H-1)/2)*TS);
+const inside=(x,y)=>x>=0&&y>=0&&x<W&&y<H;
+function genMaze(){
+  walls=Array.from({length:H},()=>Array.from({length:W},()=>({n:1,e:1,s:1,w:1})));
+  const seen=Array.from({length:H},()=>Array(W).fill(false));
+  const stack=[[Math.floor(Math.random()*W),Math.floor(Math.random()*H)]];seen[stack[0][1]][stack[0][0]]=true;
+  while(stack.length){const [x,y]=stack[stack.length-1];
+    const opts=Object.values(DIRS).filter(([dx,dy])=>inside(x+dx,y+dy)&&!seen[y+dy][x+dx]);
+    if(!opts.length){stack.pop();continue}
+    const [dx,dy,a,b]=opts[Math.floor(Math.random()*opts.length)];
+    walls[y][x][a]=0;walls[y+dy][x+dx][b]=0;seen[y+dy][x+dx]=true;stack.push([x+dx,y+dy]);}
+  // 少しだけ抜け道を作る
+  for(let k=0,n=0;k<40&&n<4;k++){const x=Math.floor(Math.random()*W),y=Math.floor(Math.random()*H);
+    const [dx,dy,a,b]=Object.values(DIRS)[Math.floor(Math.random()*4)];
+    if(inside(x+dx,y+dy)&&walls[y][x][a]){walls[y][x][a]=0;walls[y+dy][x+dx][b]=0;n++}}
+  // 家具（タンス）になる壁：内側の壁の一部
+  tansu=new Set();
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    if(x<W-1&&walls[y][x].e&&Math.random()<0.38)tansu.add(`${x},${y},e`);
+    if(y<H-1&&walls[y][x].s&&Math.random()<0.38)tansu.add(`${x},${y},s`);}
+  start0=[Math.random()<.5?0:W-1,H-1];
+  const {dist,prev}=bfs(start0);
+  let far=start0,fd=-1;for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(dist[y][x]>fd&&y<H-2){fd=dist[y][x];far=[x,y]}
+  goal=far;
+  const path=[];let c=goal;while(c){path.unshift(c);c=prev[c[1]][c[0]]}
+  hazards={};
+  const put=(c,t)=>{if(!c)return;const k=c.join(",");if(k===start0.join(",")||k===goal.join(",")||hazards[k])return;hazards[k]=t};
+  put(path[Math.floor(path.length*0.4)],"lego");
+  if(path.length>6)put(path[Math.floor(path.length*0.72)],"cat");
+  for(let k=0;k<20;k++){const c=[Math.floor(Math.random()*W),Math.floor(Math.random()*H)];if(!path.some(p=>p[0]===c[0]&&p[1]===c[1])){put(c,"lego");break}}
+}
+function bfs(s){const dist=Array.from({length:H},()=>Array(W).fill(-1)),prev=Array.from({length:H},()=>Array(W).fill(null));
+  dist[s[1]][s[0]]=0;const q=[s];
+  while(q.length){const [x,y]=q.shift();for(const [dx,dy,a] of Object.values(DIRS)){const nx=x+dx,ny=y+dy;
+    if(!walls[y][x][a]&&inside(nx,ny)&&dist[ny][nx]<0){dist[ny][nx]=dist[y][x]+1;prev[ny][nx]=[x,y];q.push([nx,ny])}}}
+  return {dist,prev}}
+const isTansu=(x,y,a)=>a==="e"?tansu.has(`${x},${y},e`):a==="w"?tansu.has(`${x-1},${y},e`):a==="s"?tansu.has(`${x},${y},s`):tansu.has(`${x},${y-1},s`);
+
+const floorTex=(()=>{const c=document.createElement("canvas");c.width=256;c.height=256;const g=c.getContext("2d");
+  g.fillStyle="#9a7650";g.fillRect(0,0,256,256);g.strokeStyle="rgba(60,35,15,.55)";g.lineWidth=3;
+  for(let y=0;y<256;y+=32){g.beginPath();g.moveTo(0,y);g.lineTo(256,y);g.stroke();
+    const o=(y/32)%2?96:32;for(let x=o;x<256;x+=128){g.beginPath();g.moveTo(x,y);g.lineTo(x,y+32);g.stroke()}}
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(W,H);return t})();
+
+function buildHouse(){
+  if(houseGroup)scene.remove(houseGroup);
+  houseGroup=new THREE.Group();scene.add(houseGroup);
+  const fl=new THREE.Mesh(new THREE.PlaneGeometry(W*TS,H*TS),new THREE.MeshLambertMaterial({map:floorTex}));
+  fl.rotation.x=-Math.PI/2;houseGroup.add(fl);
+  const WALL=0xd9cfb3,TANSU=0x7a5234;
+  const addWall=(x,y,side)=>{const p=cellPos(x,y);const horiz=side==="n"||side==="s";
+    const off=TS/2*(side==="n"||side==="w"?-1:1);
+    const cx=p.x+(horiz?0:off),cz=p.z+(horiz?off:0);
+    if(isTansu(x,y,side)){
+      const t=box(horiz?TS*0.92:0.62,1.45,horiz?0.62:TS*0.92,TANSU,cx,0.725,cz,houseGroup);
+      for(let k=-1;k<=1;k++){const h=box(horiz?0.36:0.04,0.06,horiz?0.04:0.36,0xd8b46a,0,0.35*k,0,t);
+        if(horiz)h.position.z=0.32;else h.position.x=0.32;
+        const h2=h.clone();if(horiz)h2.position.z=-0.32;else h2.position.x=-0.32;t.add(h2);}
+    }else box(horiz?TS+0.14:0.14,1.75,horiz?0.14:TS+0.14,WALL,cx,0.875,cz,houseGroup);};
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    if(walls[y][x].n&&y===0)addWall(x,y,"n");
+    if(walls[y][x].w&&x===0)addWall(x,y,"w");
+    if(walls[y][x].s)addWall(x,y,"s");
+    if(walls[y][x].e)addWall(x,y,"e");}
+  // 布団
+  const sp=cellPos(...start0);box(1.2,0.16,1.7,0xf0f0f6,sp.x,0.08,sp.z+0.1,houseGroup);box(1.22,0.12,1.0,0x8fa8d8,sp.x,0.2,sp.z+0.35,houseGroup);
+  box(0.6,0.14,0.3,0xffffff,sp.x,0.22,sp.z-0.55,houseGroup);
+  // トイレ
+  const gp=cellPos(...goal);
+  const bowl=new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.26,0.5,18),mat(0xf6f6f6));bowl.position.set(gp.x,0.25,gp.z+0.1);houseGroup.add(bowl);
+  box(0.62,0.7,0.24,0xf6f6f6,gp.x,0.55,gp.z-0.32,houseGroup);
+  box(0.6,0.05,0.6,0x9fd0ff,gp.x,0.52,gp.z+0.1,houseGroup);
+  const sign=sprite("WC",0.9,{size:150,color:"#7dffb0",stroke:"#0b2a18",w:300,h:200});sign.position.set(gp.x,1.9,gp.z);houseGroup.add(sign);
+  toiletLight=new THREE.PointLight(0x7dffb0,1.0,4.2,2);toiletLight.position.set(gp.x,1.2,gp.z);houseGroup.add(toiletLight);
+  glow=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,depthTest:false,transparent:true,fog:false,blending:THREE.AdditiveBlending}));
+  glow.scale.set(1.6,1.6,1);glow.position.set(gp.x,1.3,gp.z);glow.renderOrder=5;houseGroup.add(glow);
+  // レゴと猫
+  catMesh=null;
+  for(const k in hazards){const [x,y]=k.split(",").map(Number);const p=cellPos(x,y);
+    if(hazards[k]==="lego"){const cols=[0xe0483c,0x2f7de0,0xf2c531];
+      for(let i=0;i<3;i++){const b=box(0.26,0.14,0.16,cols[i],p.x+(i-1)*0.28,0.07,p.z+(i%2?0.2:-0.1),houseGroup);b.rotation.y=i*0.7;
+        for(const sx of[-0.06,0.06])ball(0.035,cols[i],sx,0.08,0,b);}}
+    else{const g=new THREE.Group();g.position.set(p.x+0.15,0,p.z);houseGroup.add(g);
+      ball(0.32,0xe2a35a,0,0.2,0,g).scale.set(1.3,0.7,1);ball(0.17,0xe2a35a,0.36,0.26,0.05,g);
+      for(const z of[-0.07,0.17]){const e=new THREE.Mesh(new THREE.ConeGeometry(0.06,0.12,4),mat(0xe2a35a));e.position.set(0.38,0.43,z);g.add(e)}
+      const tail=box(0.45,0.07,0.07,0xc2833f,-0.45,0.1,0.12,g);tail.rotation.y=0.6;catMesh=g;}}
+}
+
+/* ---------- 主人公 ---------- */
+const hero=new THREE.Group();scene.add(hero);
+const body=new THREE.Group();hero.add(body);
+const PJ=0x6f8fd8;
+const legs=[];for(const x of[-0.12,0.12]){const l=box(0.15,0.5,0.15,PJ,x,0.25,0,body);legs.push(l)}
+box(0.48,0.56,0.3,PJ,0,0.78,0,body);
+for(let i=0;i<3;i++)box(0.49,0.04,0.31,0xeaf0ff,0,0.6+i*0.17,0,body);
+const hHead=ball(0.24,0xf2d3b5,0,1.28,0,body);
+const cap=new THREE.Mesh(new THREE.ConeGeometry(0.24,0.42,14),mat(0x3d5bb0));cap.position.set(0,1.55,-0.02);cap.rotation.x=-0.35;body.add(cap);
+ball(0.06,0xffffff,0,1.72,-0.1,body);
+for(const x of[-0.08,0.08])ball(0.03,0x1f2430,x,1.3,0.22,body);
+const sweat=ball(0.05,0x9fd8ff,0.2,1.42,0.12,body);sweat.visible=false;
+
+/* ---------- 状態 ---------- */
+let state="idle",timers=[],cell=[0,0],moving=null,stun=0,meter=25,tPlay=0,koyubi=0,flashT=0,midFlash=0,heroFace=0,bumpAnim=0,bumpDir=[0,0];
+const later=(fn,ms)=>timers.push(setTimeout(fn,ms));
+const clearAll=()=>{timers.forEach(clearTimeout);timers=[]};
+const fx=[];
+function addFx(s,life,vy=0.6){scene.add(s);fx.push({s,life,t:0,vy});return s}
+function clearFx(){for(const f of fx)scene.remove(f.s);fx.length=0}
+function setLights(bright){
+  if(bright){hemi.intensity=1.1;hemi.color.set(0xdfe6ff);moon.intensity=0.9;fog.near=200;fog.far=400;}
+  else{hemi.intensity=0.06;hemi.color.set(0x8a96ff);moon.intensity=0.12;fog.near=2.2;fog.far=5.6;}}
+function lightning(ms){flashT=ms/1000;flashEl.style.transition="none";flashEl.style.opacity="0.85";
+  requestAnimationFrame(()=>{flashEl.style.transition="opacity .5s";flashEl.style.opacity="0"})}
+function placeHero(){const p=cellPos(...cell);hero.position.copy(p);}
+function updateBar(){
+  const m=Math.max(0,Math.min(100,meter));barEl.style.width=m+"%";
+  barEl.style.background=m<55?"var(--glow)":m<80?"var(--accent)":"var(--danger)";
+  barEl.parentElement.setAttribute("aria-valuenow",String(Math.round(m)));}
+function overheadCam(){
+  const tan=Math.tan(THREE.MathUtils.degToRad(camera.fov/2));
+  const hz=(H*TS)/2+1.2,hx=(W*TS)/2+1.2;
+  const h=Math.max(hz/tan,hx/(tan*camera.aspect));
+  return {pos:new THREE.Vector3(0,h,h*0.12),look:new THREE.Vector3(0,0,0)}}
+let camMode="overhead";
+const camLook=new THREE.Vector3();
+
+function start(){
+  clearAll();hideActions();clearFx();
+  genMaze();buildHouse();cell=[...start0];placeHero();heroFace=Math.PI;hero.rotation.y=heroFace;
+  moving=null;stun=0;meter=25;tPlay=0;koyubi=0;midFlash=0;urgency=0;updateBar();timeEl.textContent="0.00";
+  pad.classList.add("off");
+  state="intro";camMode="hero";setLights(false);
+  msg.textContent="……トイレ行きたい";rankEl.textContent="";SE.yawn();
+  later(()=>{
+    state="reveal";SE.crack();lightning(400);setLights(true);camMode="overhead";
+    msg.textContent="雷で一瞬見えた！";rankEl.textContent="間取りを覚えろ";
+    let n=3;countEl.textContent=n;
+    const cd=()=>{n--;if(n>0){countEl.textContent=n;later(cd,1000)}else{
+      countEl.textContent="";setLights(false);camMode="hero";SE.rumble();
+      state="play";playing=true;pad.classList.remove("off");msg.textContent="";rankEl.textContent="";
+      midFlash=8+Math.random()*7;}};
+    later(cd,1000);
+  },1300);
+}
+
+function tryMove(d){
+  if(state!=="play"||moving||stun>0)return;
+  const [dx,dy,a]=DIRS[d];const [x,y]=cell;
+  heroFace=Math.atan2(dx,dy);
+  if(walls[y][x][a]){
+    bumpDir=[dx,dy];bumpAnim=0.25;
+    if(isTansu(x,y,a)){koyubi++;stun=1.1;meter+=12;SE.koyubi();
+      const s=addFx(sprite("小指ーッ！！",2.2,{size:94,color:"#ff5a4a",stroke:"#fff"}),1.2,0.5);s.position.copy(hero.position).add(new THREE.Vector3(0,2.2,0));}
+    else{stun=0.35;meter+=3;SE.bump();
+      const s=addFx(sprite("ゴンッ",1.4,{size:110,color:"#fff",stroke:"#1f2430"}),0.8,0.5);s.position.copy(hero.position).add(new THREE.Vector3(dx*0.8,1.6,dy*0.8));}
+    updateBar();if(meter>=100)fail();return;
+  }
+  moving={from:cellPos(x,y),to:cellPos(x+dx,y+dy),t:0};cell=[x+dx,y+dy];SE.step();
+}
+function arrive(){
+  const k=cell.join(",");
+  if(cell[0]===goal[0]&&cell[1]===goal[1]){win();return}
+  const hz=hazards[k];
+  if(hz==="lego"){stun=0.9;meter+=9;SE.lego();
+    const s=addFx(sprite("レゴ踏んだ！",2.0,{size:96,color:"#f2c531",stroke:"#1f2430"}),1.1,0.5);s.position.copy(hero.position).add(new THREE.Vector3(0,2.1,0));}
+  if(hz==="cat"){stun=0.8;meter+=10;SE.cat();delete hazards[k];
+    const s=addFx(sprite("ニャ゛ーッ！",2.0,{size:96,color:"#e2a35a",stroke:"#1f2430"}),1.1,0.5);s.position.copy(hero.position).add(new THREE.Vector3(0,2.1,0));
+    if(catMesh){const c=catMesh;catMesh=null;let t=0;const run=()=>{t+=0.03;c.position.y=Math.sin(t*6)*0.6+0.3;c.position.x+=0.12;if(t<0.6)requestAnimationFrame(run);else houseGroup.remove(c)};run();}}
+  updateBar();if(meter>=100)fail();
+}
+function endCommon(){state="end";playing=false;pad.classList.add("off");moving=null}
+function win(){
+  endCommon();SE.door();SE.flush();
+  const t=tPlay;const rank=t<12?"夜目の達人":t<18?"間取りマスター":t<26?"寝ぼけた大人":"ギリギリセーフ";
+  msg.textContent=`セーフ！ ${t.toFixed(2)} 秒`;
+  let line=`${rank}　小指 ${koyubi} 回`;
+  if(!best||t<best){best=t;try{localStorage.setItem("hb-toire-best",best.toFixed(2))}catch(e){}showBest();line+="　自己ベスト更新！"}
+  rankEl.textContent=line;
+  setLights(true);hemi.intensity=0.5;
+  later(()=>SE.result(),1600);
+  showActions(`夜中のトイレ、真っ暗な家を ${t.toFixed(2)}秒 で突破！\n小指をぶつけた回数：${koyubi}回【${rank}】`);
+}
+function fail(){
+  if(state!=="play")return;
+  endCommon();meter=100;updateBar();SE.fail();
+  msg.textContent="もれた……";rankEl.textContent=`明日は布団を干す日　小指 ${koyubi} 回`;
+  scene.background.set(0x0b1630);
+  showActions(`夜中のトイレ、間に合わなかった……\n小指をぶつけた回数：${koyubi}回【明日は布団を干す日】`);
+}
+
+/* ---------- 入力 ---------- */
+stage.addEventListener("pointerdown",e=>{
+  initAudio();
+  if(state==="idle"){e.preventDefault();start();return}
+  sw={x:e.clientX,y:e.clientY,id:e.pointerId};
+});
+let sw=null;
+stage.addEventListener("pointerup",e=>{
+  if(!sw||sw.id!==e.pointerId)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y;sw=null;
+  if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;
+  tryMove(Math.abs(dx)>Math.abs(dy)?(dx>0?"r":"l"):(dy>0?"d":"u"));
+});
+const KEYS={ArrowUp:"u",ArrowDown:"d",ArrowLeft:"l",ArrowRight:"r",KeyW:"u",KeyS:"d",KeyA:"l",KeyD:"r"};
+document.addEventListener("keydown",e=>{
+  if(KEYS[e.code]){e.preventDefault();initAudio();if(state==="idle")start();else tryMove(KEYS[e.code]);return}
+  if((e.code==="Space"||e.code==="Enter")&&e.target===stage){e.preventDefault();initAudio();if(state==="idle"||state==="end")start()}
+});
+let hold=null;
+for(const b of pad.querySelectorAll("button")){
+  const d=b.dataset.d;
+  b.addEventListener("pointerdown",e=>{e.preventDefault();initAudio();if(state==="idle"){start();return}
+    tryMove(d);clearInterval(hold);hold=setInterval(()=>tryMove(d),120);});
+  for(const ev of["pointerup","pointerleave","pointercancel"])b.addEventListener(ev,()=>clearInterval(hold));
+}
+
+/* ---------- 毎フレーム ---------- */
+let last=performance.now();
+const tmpV=new THREE.Vector3();
+function tick(now){
+  const dt=Math.min(0.05,(now-last)/1000);last=now;
+  const ease=r=>1-Math.exp(-dt*r);
+  if(state==="play"){
+    tPlay+=dt;timeEl.textContent=tPlay.toFixed(2);
+    meter+=dt*(2.0+tPlay*0.03);urgency=Math.min(1,Math.max(0,(meter-25)/75));updateBar();
+    if(stun>0)stun-=dt;
+    if(midFlash>0){midFlash-=dt;if(midFlash<=0){SE.crack();lightning(250);flashT=0.25}}
+    if(meter>=100)fail();
+  }
+  if(moving){moving.t+=dt/0.17;const k=Math.min(1,moving.t);hero.position.lerpVectors(moving.from,moving.to,k);
+    body.position.y=Math.sin(k*Math.PI)*0.08;if(k>=1){moving=null;body.position.y=0;if(state==="play")arrive()}}
+  // 体の動き：ぶつかった反動、焦り（内股で震える）
+  if(bumpAnim>0){bumpAnim-=dt;const k=Math.sin((0.25-bumpAnim)/0.25*Math.PI)*0.25;body.position.x=bumpDir[0]*k;body.position.z=bumpDir[1]*k}
+  else{body.position.x*=0.8;body.position.z*=0.8}
+  const shiver=state==="play"?urgency:0;
+  body.rotation.z=Math.sin(now/40)*0.04*shiver+(stun>0.5?Math.sin(now/60)*0.12:0);
+  legs[0].rotation.z=-0.18*shiver;legs[1].rotation.z=0.18*shiver;
+  sweat.visible=shiver>0.6;sweat.position.y=1.42-((now/700)%1)*0.3;
+  let dy=heroFace-hero.rotation.y;dy=Math.atan2(Math.sin(dy),Math.cos(dy));hero.rotation.y+=dy*ease(14);
+  eyeLight.position.copy(hero.position).add(tmpV.set(0,1.8,0));
+  if(glow)glow.material.opacity=0.55+Math.sin(now/500)*0.2;
+  // 稲妻（ゲーム中の一瞬）
+  if(flashT>0){flashT-=dt;if(state==="play"){setLights(flashT>0)}}
+  // カメラ
+  let goalPos,goalLook;
+  if(camMode==="overhead"){const o=overheadCam();goalPos=o.pos;goalLook=o.look}
+  else{goalLook=tmpV.copy(hero.position).add(new THREE.Vector3(0,0.4,-0.6));goalPos=hero.position.clone().add(new THREE.Vector3(0,6.2,4.4))}
+  camera.position.lerp(goalPos,ease(camMode==="overhead"?6:5));camLook.lerp(goalLook,ease(7));camera.lookAt(camLook);
+  for(let i=fx.length-1;i>=0;i--){const f=fx[i];f.t+=dt;f.s.position.y+=f.vy*dt;
+    f.s.material.opacity=Math.max(0,1-Math.max(0,f.t-f.life*0.6)/(f.life*0.4));if(f.t>=f.life){scene.remove(f.s);fx.splice(i,1)}}
+  if(state!=="end")scene.background.set(NIGHT);
+  renderer.render(scene,camera);
+  requestAnimationFrame(tick);
+}
+function resize(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;
+  renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix()}
+new ResizeObserver(resize).observe(stage);resize();
+
+// 最初の画面：寝室で眠っている様子を上から見せる
+genMaze();buildHouse();cell=[...start0];placeHero();hero.rotation.y=Math.PI;heroFace=Math.PI;
+{const o=overheadCam();camera.position.copy(o.pos);camLook.copy(o.look);camMode="hero";}
+camera.lookAt(camLook);
+requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
