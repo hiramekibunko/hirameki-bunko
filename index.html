@@ -3,33 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="一日一冊、思いつきを小さなゲームにして棚に並べるひらめき文庫。">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <title>ひらめき文庫</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="一日一冊、思いつきを小さなゲームにして棚に並べるひらめき文庫。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@600;900&display=swap">
 <style>
-/* Layout: 文庫本の表紙を並べた棚（一目で中身がわかる） → 表紙をタップすると縦長(9:16)のゲーム画面が開く */
+/* 本棚：games.json を読んで表紙を並べる。表紙をタップすると games/<id>/ のゲームへ */
 :root{
   --paper:#eef0ea; --ink:#1f2430; --ink-soft:#5a6070; --card:#fbfbf7; --rule:#cfd2c8;
-  --shelf:#3b2a20; --bulb:#ffcf33; --red:#d6453a;
-  --sp1:#2e5e8c; --sp2:#b2433a; --sp3:#3f7d5a; --sp4:#7a4f8f; --sp5:#c07a22; --sp6:#4a5463;
+  --shelf:#3b2a20; --bulb:#ffcf33;
   --font-display:"Dela Gothic One","Zen Kaku Gothic New",system-ui,sans-serif;
   --font-body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
   --font-mincho:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+  color-scheme:light;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+@media (prefers-color-scheme: dark){:root{
   --paper:#16181d; --ink:#e9e8e0; --ink-soft:#a3a6ae; --card:#f3f2ea; --rule:#33363f; --shelf:#2a1d15; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --paper:#16181d; --ink:#e9e8e0; --ink-soft:#a3a6ae; --card:#f3f2ea; --rule:#33363f; --shelf:#2a1d15; color-scheme:dark}
-
 *{box-sizing:border-box}
-body{background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.7}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.7}
 .wrap{max-width:1000px;margin:0 auto;padding-block:32px 56px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   display:flex;flex-direction:column;gap:32px}
-
 header{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
 .mark{width:60px;height:60px;border-radius:50%;background:var(--bulb);display:grid;place-items:center}
 .mark svg{width:34px;height:34px}
@@ -37,60 +32,26 @@ h1{font-family:var(--font-display);font-weight:400;font-size:clamp(30px,7vw,52px
 .tag{margin:4px 0 0;color:var(--ink-soft);font-family:var(--font-mincho);font-weight:600}
 .meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--ink-soft);border-top:1px solid var(--rule);padding-top:10px}
 .meta b{color:var(--ink);font-variant-numeric:tabular-nums}
-
-/* 表紙の棚 */
 .shelf{background:var(--shelf);border-radius:6px;padding:16px 14px 14px}
 .covers{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
-.cover{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;color:#fff;
-  border-radius:3px 6px 6px 3px;padding:10px 10px 12px;position:relative;
-  box-shadow:inset 6px 0 0 rgba(0,0,0,.18);transition:transform .15s ease}
-button.cover{cursor:pointer}
-button.cover:hover{transform:translateY(-4px)}
-button.cover:focus-visible{outline:3px solid var(--bulb);outline-offset:3px}
+.cover{display:flex;flex-direction:column;gap:8px;color:#fff;text-decoration:none;
+  border-radius:3px 6px 6px 3px;padding:10px 10px 12px;box-shadow:inset 6px 0 0 rgba(0,0,0,.18);transition:transform .15s ease}
+.cover:hover{transform:translateY(-4px)}
+.cover:focus-visible{outline:3px solid var(--bulb);outline-offset:3px}
 .cover .top{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.12em;opacity:.9;padding-left:4px}
-.art{background:var(--card);border-radius:2px;aspect-ratio:1/1;max-width:100%;display:grid;place-items:center;color:#1f2430}
-.art svg{width:82%;height:82%}
+.art{background:var(--card);border-radius:2px;aspect-ratio:1/1;max-width:100%;display:grid;place-items:center}
+.art img{width:82%;height:82%}
 .cover h2{font-family:var(--font-mincho);font-weight:900;font-size:21px;line-height:1.25;margin:2px 0 0 4px;text-wrap:balance}
 .cover p{margin:0 0 0 4px;font-size:12.5px;line-height:1.6;opacity:.92}
-.chip{margin:auto 0 0 4px;align-self:flex-start;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px}
-.chip.play{background:var(--bulb);color:#1f2430}
-.chip.soon{border:1px solid rgba(255,255,255,.6)}
-.cover.is-soon .art{opacity:.75}
-
+.chip{margin:auto 0 0 4px;align-self:flex-start;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--bulb);color:#1f2430}
+.note{color:#e9e8e0;font-size:13px;margin:0}
 footer{border-top:3px double var(--rule);padding-top:14px;font-size:12px;color:var(--ink-soft);
   display:grid;grid-template-columns:max-content 1fr;gap:2px 16px;max-width:340px}
 footer .h{grid-column:1/-1;font-family:var(--font-mincho);font-weight:900;font-size:15px;color:var(--ink);margin-bottom:4px}
-
-/* 縦長ゲーム画面 */
-.overlay{position:fixed;inset:0;z-index:20;background:rgba(10,12,16,.82);display:grid;place-items:center;
-  padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
-.screen{height:min(100%,860px);aspect-ratio:9/16;max-width:100%;background:#1f2430;color:#eef0ea;border-radius:18px;
-  display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-@media (max-width:520px){.overlay{padding:0}.screen{height:100%;width:100%;aspect-ratio:auto;border-radius:0;
-  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}}
-.bar{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #343a48}
-.bar button{all:unset;cursor:pointer;font-size:14px;padding:6px 12px;border-radius:99px;background:#343a48}
-.bar button:focus-visible{outline:2px solid var(--bulb)}
-.bar .ttl{font-family:var(--font-mincho);font-weight:900;font-size:18px}
-.bar .no{margin-left:auto;font-size:11px;opacity:.6;letter-spacing:.1em}
-.stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;
-  cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;padding:20px}
-.stage:focus-visible{outline:3px solid var(--bulb);outline-offset:-6px}
-.bulb{width:44%;max-width:180px}
-.bulb .glass{fill:#4a4f5c}
-.stage.lit{background:#2a2f3b}
-.stage.lit .bulb .glass{fill:var(--bulb)}
-.stage.lit .bulb{filter:drop-shadow(0 0 36px var(--bulb))}
-.stage.early{background:#3a2226}
-.msg{font-family:var(--font-display);font-size:clamp(22px,6vw,30px);letter-spacing:.04em;min-height:1.4em}
-.rank{font-family:var(--font-mincho);font-weight:900;font-size:18px;color:var(--bulb);min-height:1.5em}
-.foot{display:flex;justify-content:space-between;padding:12px 16px;border-top:1px solid #343a48;font-size:13px;opacity:.85;font-variant-numeric:tabular-nums}
-
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-
 <div class="wrap">
   <header>
     <div class="mark" aria-hidden="true">
@@ -102,13 +63,13 @@ footer .h{grid-column:1/-1;font-family:var(--font-mincho);font-weight:900;font-s
     </div>
     <div class="meta">
       <span>創刊 <b>2026.10.28</b></span>
-      <span>既刊 <b>1</b> 冊</span>
+      <span>既刊 <b id="count">―</b> 冊</span>
       <span>スマホ縦持ち推奨</span>
     </div>
   </header>
 
   <section class="shelf" aria-label="ゲーム一覧">
-    <div class="covers" id="covers"></div>
+    <div class="covers" id="covers"><p class="note">本棚を読み込んでいます…</p></div>
   </section>
 
   <footer>
@@ -118,74 +79,25 @@ footer .h{grid-column:1/-1;font-family:var(--font-mincho);font-weight:900;font-s
     <span>発行</span><span>一日一冊（予定）</span>
   </footer>
 </div>
-
-<div class="overlay" id="overlay" hidden>
-  <div class="screen" role="dialog" aria-modal="true" aria-labelledby="g-title">
-    <div class="bar">
-      <button id="close" type="button">← 棚へ</button>
-      <span class="ttl" id="g-title">点灯</span>
-      <span class="no">ひ-1-1</span>
-    </div>
-    <div class="stage" id="stage" tabindex="0" role="button" aria-label="タップで開始">
-      <svg class="bulb" viewBox="0 0 40 40" aria-hidden="true"><path class="glass" d="M20 4a12 12 0 0 0-7 21.8V30h14v-4.2A12 12 0 0 0 20 4z"/><rect x="14" y="32" width="12" height="3" rx="1.5" fill="#8a8f9c"/></svg>
-      <div class="msg" id="msg">タップで開始</div>
-      <div class="rank" id="rank" aria-live="polite"></div>
-    </div>
-    <div class="foot"><span>光ったら即タップ</span><span>自己ベスト <b id="best">―</b></span></div>
-  </div>
-</div>
-
 <script>
-const ART={
-  bulb:`<svg viewBox="0 0 100 100"><g stroke="#1f2430" stroke-width="4" stroke-linecap="round"><path d="M50 8v8M22 20l6 6M78 20l-6 6M12 48h8M80 48h8"/></g><path d="M50 26a20 20 0 0 0-12 36v8h24v-8a20 20 0 0 0-12-36z" fill="#ffcf33" stroke="#1f2430" stroke-width="4"/><rect x="40" y="76" width="20" height="6" rx="3" fill="#1f2430"/></svg>`,
-  kanji:`<svg viewBox="0 0 100 100"><text x="34" y="66" text-anchor="middle" font-size="48" font-family="Zen Old Mincho,serif" font-weight="900" fill="#1f2430">日</text><text x="58" y="56" font-size="18" fill="#1f2430">→</text><text x="82" y="66" text-anchor="middle" font-size="48" font-family="Zen Old Mincho,serif" font-weight="900" fill="#1f2430">目</text><path d="M70 50h24" stroke="#d6453a" stroke-width="5" stroke-linecap="round"/></svg>`,
-  button:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="64" rx="34" ry="12" fill="#3a3f4c"/><path d="M18 52a32 12 0 0 0 64 0v10a32 12 0 0 1-64 0z" fill="#9b2e26"/><ellipse cx="50" cy="52" rx="32" ry="12" fill="#d6453a"/><text x="50" y="57" text-anchor="middle" font-size="13" font-weight="700" fill="#fff" font-family="Zen Kaku Gothic New,sans-serif">押すな</text><path d="M78 20l-8 12M86 30l-12 6" stroke="#1f2430" stroke-width="3" stroke-linecap="round"/></svg>`,
-  timer:`<svg viewBox="0 0 100 100"><rect x="44" y="8" width="12" height="8" rx="2" fill="#1f2430"/><circle cx="50" cy="56" r="34" fill="none" stroke="#1f2430" stroke-width="5"/><text x="50" y="64" text-anchor="middle" font-size="22" font-weight="700" fill="#1f2430" font-family="ui-monospace,monospace">10.00</text><path d="M50 26v6" stroke="#7a4f8f" stroke-width="4" stroke-linecap="round"/></svg>`,
-  maze:`<svg viewBox="0 0 100 100" fill="none" stroke-width="5" stroke-linecap="square"><g stroke="#1f2430"><path d="M14 14h72v72H14z"/><path d="M14 38h26M60 14v26h-20M86 62H50v24M34 62v-12"/></g><g stroke="#1f2430" opacity=".18"><path d="M60 40h14M40 74h-14"/></g><circle cx="24" cy="76" r="6" fill="#c07a22" stroke="none"/></svg>`,
-  stack:`<svg viewBox="0 0 100 100" font-family="Zen Old Mincho,serif" font-weight="900" font-size="22" text-anchor="middle"><rect x="12" y="88" width="76" height="4" fill="#1f2430"/><rect x="30" y="64" width="40" height="24" fill="#4a5463"/><text x="50" y="84" fill="#fff">口</text><rect x="34" y="40" width="32" height="24" fill="#1f2430"/><text x="50" y="60" fill="#fff">田</text><g transform="rotate(18 56 28)"><rect x="42" y="16" width="28" height="24" fill="#d6453a"/><text x="56" y="35" fill="#fff">乙</text></g></svg>`
-};
-const books=[
-  {no:"ひ-1-1",t:"点灯",c:"--sp1",art:"bulb",ready:true,d:"電球が光った瞬間にタップ。ひらめきの速さをミリ秒で測る反射神経ゲーム。"}
-];
-const wrap=document.getElementById("covers");
-books.forEach(b=>{
-  const el=document.createElement(b.ready?"button":"div");
-  el.className="cover"+(b.ready?"":" is-soon");
-  if(b.ready) el.type="button";
-  el.style.background=`var(${b.c})`;
-  el.innerHTML=`<div class="top"><span>${b.no}</span><span>第${books.indexOf(b)+1}巻</span></div>
-    <div class="art">${ART[b.art]}</div><h2>${b.t}</h2><p>${b.d}</p>
-    <span class="chip ${b.ready?"play":"soon"}">${b.ready?"あそぶ ▶":"近日刊行"}</span>`;
-  if(b.ready) el.addEventListener("click",openGame);
-  wrap.appendChild(el);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+fetch("games.json",{cache:"no-cache"}).then(r=>r.json()).then(list=>{
+  const box=document.getElementById("covers");
+  document.getElementById("count").textContent=list.length;
+  box.innerHTML="";
+  // 新しい巻が先頭に来るように逆順で並べる
+  list.map((g,i)=>({...g,vol:i+1})).reverse().forEach(g=>{
+    const a=document.createElement("a");
+    a.className="cover";a.href=`games/${encodeURIComponent(g.id)}/`;
+    a.style.background=g.color||"#4a5463";
+    a.innerHTML=`<div class="top"><span>${esc(g.no||"")}</span><span>第${g.vol}巻</span></div>
+      <div class="art"><img src="games/${encodeURIComponent(g.id)}/cover.svg" alt=""></div>
+      <h2>${esc(g.title)}</h2><p>${esc(g.desc||"")}</p><span class="chip">あそぶ ▶</span>`;
+    box.appendChild(a);
+  });
+}).catch(()=>{
+  document.getElementById("covers").innerHTML='<p class="note">本棚を読み込めませんでした。games.json の書き方（カンマや " の抜け）を確認してください。</p>';
 });
-
-const overlay=document.getElementById("overlay"),stage=document.getElementById("stage"),
-  msg=document.getElementById("msg"),rankEl=document.getElementById("rank"),bestEl=document.getElementById("best");
-let state="idle",timer=null,litAt=0,best=null,opener=null;
-try{best=Number(localStorage.getItem("hb-tento-best"))||null}catch(e){}
-const showBest=()=>bestEl.textContent=best?best+" ms":"―";
-showBest();
-function reset(){clearTimeout(timer);state="idle";stage.className="stage";msg.textContent="タップで開始";rankEl.textContent="";}
-function openGame(e){opener=e.currentTarget;reset();overlay.hidden=false;document.body.style.overflow="hidden";stage.focus();}
-function closeGame(){reset();overlay.hidden=true;document.body.style.overflow="";opener&&opener.focus();}
-document.getElementById("close").addEventListener("click",closeGame);
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!overlay.hidden)closeGame()});
-function press(){
-  if(state==="idle"||state==="done"){
-    state="wait";stage.className="stage";msg.textContent="……";rankEl.textContent="";
-    timer=setTimeout(()=>{state="lit";stage.className="stage lit";msg.textContent="今！";litAt=performance.now();},1200+Math.random()*2800);
-  }else if(state==="wait"){
-    clearTimeout(timer);state="done";stage.className="stage early";msg.textContent="フライング";rankEl.textContent="タップでもう一回";
-  }else if(state==="lit"){
-    const ms=Math.round(performance.now()-litAt);state="done";stage.className="stage";
-    msg.textContent=`${ms} ms`;
-    rankEl.textContent=ms<200?"天才的ひらめき":ms<260?"冴えてる":ms<350?"ふつう":"まだ寝てる";
-    if(!best||ms<best){best=ms;try{localStorage.setItem("hb-tento-best",ms)}catch(e){}showBest();rankEl.textContent+="　自己ベスト更新！";}
-  }
-}
-stage.addEventListener("pointerdown",e=>{e.preventDefault();press()});
-stage.addEventListener("keydown",e=>{if(e.code==="Space"||e.code==="Enter"){e.preventDefault();press()}});
 </script>
 </body>
 </html>

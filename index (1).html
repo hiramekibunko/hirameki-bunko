@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>点灯｜ひらめき文庫</title>
+<meta name="description" content="電球が光った瞬間にタップ。ひらめきの速さをミリ秒で測る反射神経ゲーム。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@900&display=swap">
+<style>
+/* 縦長(9:16)のゲーム画面。スマホでは全画面、PCでは中央に縦フレーム */
+:root{--bg:#0f1115;--screen:#1f2430;--fg:#eef0ea;--line:#343a48;--bulb:#ffcf33;
+  --font-display:"Dela Gothic One","Zen Kaku Gothic New",system-ui,sans-serif;
+  --font-body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --font-mincho:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);display:grid;place-items:center;
+  padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.screen{height:min(100%,860px);aspect-ratio:9/16;max-width:100%;background:var(--screen);border-radius:18px;
+  display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+@media (max-width:520px){body{padding:0}.screen{height:100%;width:100%;aspect-ratio:auto;border-radius:0;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}}
+.bar{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.bar a{color:var(--fg);text-decoration:none;font-size:14px;padding:6px 12px;border-radius:99px;background:var(--line)}
+.bar a:focus-visible{outline:2px solid var(--bulb)}
+.ttl{font-family:var(--font-mincho);font-weight:900;font-size:18px;margin:0}
+.no{margin-left:auto;font-size:11px;opacity:.6;letter-spacing:.1em}
+.stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;
+  cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;padding:20px;transition:background .05s}
+.stage:focus-visible{outline:3px solid var(--bulb);outline-offset:-6px}
+.bulb{width:44%;max-width:180px}
+.bulb .glass{fill:#4a4f5c}
+.stage.lit{background:#2a2f3b}
+.stage.lit .bulb .glass{fill:var(--bulb)}
+.stage.lit .bulb{filter:drop-shadow(0 0 36px var(--bulb))}
+.stage.early{background:#3a2226}
+.msg{font-family:var(--font-display);font-size:clamp(22px,6vw,30px);letter-spacing:.04em;min-height:1.4em}
+.rank{font-family:var(--font-mincho);font-weight:900;font-size:18px;color:var(--bulb);min-height:1.5em}
+.foot{display:flex;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--line);font-size:13px;opacity:.85;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<main class="screen">
+  <div class="bar">
+    <a href="../../">← 棚へ</a>
+    <h1 class="ttl">点灯</h1>
+    <span class="no">ひ-1-1</span>
+  </div>
+  <div class="stage" id="stage" tabindex="0" role="button" aria-label="タップで開始">
+    <svg class="bulb" viewBox="0 0 40 40" aria-hidden="true"><path class="glass" d="M20 4a12 12 0 0 0-7 21.8V30h14v-4.2A12 12 0 0 0 20 4z"/><rect x="14" y="32" width="12" height="3" rx="1.5" fill="#8a8f9c"/></svg>
+    <div class="msg" id="msg">タップで開始</div>
+    <div class="rank" id="rank" aria-live="polite"></div>
+  </div>
+  <div class="foot"><span>光ったら即タップ</span><span>自己ベスト <b id="best">―</b></span></div>
+</main>
+<script>
+const stage=document.getElementById("stage"),msg=document.getElementById("msg"),rankEl=document.getElementById("rank"),bestEl=document.getElementById("best");
+let state="idle",timer=null,litAt=0,best=null;
+try{best=Number(localStorage.getItem("hb-tento-best"))||null}catch(e){}
+const showBest=()=>bestEl.textContent=best?best+" ms":"―";
+showBest();
+function press(){
+  if(state==="idle"||state==="done"){
+    state="wait";stage.className="stage";msg.textContent="……";rankEl.textContent="";
+    timer=setTimeout(()=>{state="lit";stage.className="stage lit";msg.textContent="今！";litAt=performance.now();},1200+Math.random()*2800);
+  }else if(state==="wait"){
+    clearTimeout(timer);state="done";stage.className="stage early";msg.textContent="フライング";rankEl.textContent="タップでもう一回";
+  }else if(state==="lit"){
+    const ms=Math.round(performance.now()-litAt);state="done";stage.className="stage";
+    msg.textContent=`${ms} ms`;
+    rankEl.textContent=ms<200?"天才的ひらめき":ms<260?"冴えてる":ms<350?"ふつう":"まだ寝てる";
+    if(!best||ms<best){best=ms;try{localStorage.setItem("hb-tento-best",ms)}catch(e){}showBest();rankEl.textContent+="　自己ベスト更新！";}
+  }
+}
+stage.addEventListener("pointerdown",e=>{e.preventDefault();press()});
+stage.addEventListener("keydown",e=>{if(e.code==="Space"||e.code==="Enter"){e.preventDefault();press()}});
+</script>
+</body>
+</html>
