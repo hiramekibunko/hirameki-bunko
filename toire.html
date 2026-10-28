@@ -271,7 +271,7 @@ function genMaze(){
     const [dx,dy,a,b]=opts[Math.floor(Math.random()*opts.length)];
     walls[y][x][a]=0;walls[y+dy][x+dx][b]=0;seen[y+dy][x+dx]=true;stack.push([x+dx,y+dy]);}
   // 少しだけ抜け道を作る
-  for(let k=0,n=0;k<40&&n<4;k++){const x=Math.floor(Math.random()*W),y=Math.floor(Math.random()*H);
+  for(let k=0,n=0;k<60&&n<6;k++){const x=Math.floor(Math.random()*W),y=Math.floor(Math.random()*H);
     const [dx,dy,a,b]=Object.values(DIRS)[Math.floor(Math.random()*4)];
     if(inside(x+dx,y+dy)&&walls[y][x][a]){walls[y][x][a]=0;walls[y+dy][x+dx][b]=0;n++}}
   // 家具（タンス）になる壁：内側の壁の一部
@@ -284,16 +284,26 @@ function genMaze(){
   let far=start0,fd=-1;for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(dist[y][x]>fd&&y<H-2){fd=dist[y][x];far=[x,y]}
   goal=far;
   const path=[];let c=goal;while(c){path.unshift(c);c=prev[c[1]][c[0]]}
+  // レゴと猫：必ず避けて通れる道が残る場所にだけ置く
   hazards={};
-  const put=(c,t)=>{if(!c)return;const k=c.join(",");if(k===start0.join(",")||k===goal.join(",")||hazards[k])return;hazards[k]=t};
-  put(path[Math.floor(path.length*0.4)],"lego");
-  if(path.length>6)put(path[Math.floor(path.length*0.72)],"cat");
-  for(let k=0;k<20;k++){const c=[Math.floor(Math.random()*W),Math.floor(Math.random()*H)];if(!path.some(p=>p[0]===c[0]&&p[1]===c[1])){put(c,"lego");break}}
+  const base=path.length-1,key=c=>c.join(",");
+  const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  const avoidLen=()=>{const {dist}=bfs(start0,hazards);return dist[goal[1]][goal[0]]};
+  const onPath=shuffle(path.slice(2,-1).map(c=>[...c]));
+  const others=[];for(let y=0;y<H;y++)for(let x=0;x<W;x++){const c=[x,y];if(!path.some(p=>p[0]===x&&p[1]===y)&&key(c)!==key(start0))others.push(c)}
+  shuffle(others);
+  for(const type of["lego","cat","lego"]){
+    let placed=false;
+    for(const c of onPath){if(hazards[key(c)])continue;hazards[key(c)]=type;
+      const d=avoidLen();if(d>0&&d<=base+6){placed=true;break}delete hazards[key(c)];}
+    if(!placed)for(const c of others){if(hazards[key(c)])continue;hazards[key(c)]=type;
+      if(avoidLen()>0){placed=true;break}delete hazards[key(c)];}
+  }
 }
-function bfs(s){const dist=Array.from({length:H},()=>Array(W).fill(-1)),prev=Array.from({length:H},()=>Array(W).fill(null));
+function bfs(s,blocked){const dist=Array.from({length:H},()=>Array(W).fill(-1)),prev=Array.from({length:H},()=>Array(W).fill(null));
   dist[s[1]][s[0]]=0;const q=[s];
   while(q.length){const [x,y]=q.shift();for(const [dx,dy,a] of Object.values(DIRS)){const nx=x+dx,ny=y+dy;
-    if(!walls[y][x][a]&&inside(nx,ny)&&dist[ny][nx]<0){dist[ny][nx]=dist[y][x]+1;prev[ny][nx]=[x,y];q.push([nx,ny])}}}
+    if(!walls[y][x][a]&&inside(nx,ny)&&dist[ny][nx]<0&&!(blocked&&blocked[nx+","+ny])){dist[ny][nx]=dist[y][x]+1;prev[ny][nx]=[x,y];q.push([nx,ny])}}}
   return {dist,prev}}
 const isTansu=(x,y,a)=>a==="e"?tansu.has(`${x},${y},e`):a==="w"?tansu.has(`${x-1},${y},e`):a==="s"?tansu.has(`${x},${y},s`):tansu.has(`${x},${y-1},s`);
 
