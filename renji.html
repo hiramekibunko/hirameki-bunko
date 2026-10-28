@@ -379,14 +379,15 @@ space.add(spaceStars);
 let state="idle",timers=[],tStart=0,elapsed=0,result=null,travel=null,doorTarget=0,shake=0,camMode="kitchen",sparkOn=false,boomed=false;
 const later=(fn,ms)=>timers.push(setTimeout(fn,ms));
 const clearAll=()=>{timers.forEach(clearTimeout);timers=[]};
-const LANDS=[[3,"台所に広がった"],[30,"家族が起きてきた"],[150,"お隣さんが窓を開けた"],[800,"コンビニの店員が振り向いた"],[5000,"駅前がざわついた"],
+const LANDS=[[1,"レンジの前でふわっと"],[3,"台所に広がった"],[30,"家族が起きてきた"],[150,"お隣さんが窓を開けた"],[800,"コンビニの店員が振り向いた"],[5000,"駅前がざわついた"],
   [40000,"都心の人が立ち止まった"],[300000,"富士山を越えた"],[1200000,"北海道まで届いた"],[3000000,"海を渡った"],[12000000,"地球の裏側まで届いた"],[100000000,"宇宙に出た"],[384000000,"月に届いた"]];
 const MAXD=3.844e8;
-const distFor=err=>err>0.5?0:3*Math.pow(10,(0.5-err)/0.5*Math.log10(MAXD/3));
+// 誤差2秒以内なら香りが届く。ぴったりに近いほど一気に伸びる
+const distFor=err=>err>2?0:Math.pow(10,Math.pow(1-err/2,2.6)*Math.log10(MAXD));
 
 function setBig(label,cls,disabled){bigBtn.textContent=label;bigBtn.className="big"+(cls?" "+cls:"");bigBtn.disabled=!!disabled}
 function setBunLook(kind){
-  const c={fresh:0xf6f1e6,cold:0xcfe3f5,hard:0xc9b48a,burnt:0x3a2a20}[kind];bunMat.color.set(c);
+  const c={fresh:0xf6f1e6,firm:0xeadcc0,cold:0xcfe3f5,hard:0xc9b48a,burnt:0x3a2a20}[kind];bunMat.color.set(c);
   const s=kind==="hard"?0.86:kind==="burnt"?0.8:1;bun.scale.set(s,s,s);}
 function reset(){
   clearAll();hideActions();clearFx();humStop();
@@ -406,8 +407,8 @@ function start(){
   // 邪魔が入る（毎回ちがう）
   const events=["bell","phone","cat","toaster"].sort(()=>Math.random()-.5).slice(0,1+Math.floor(Math.random()*2));
   events.forEach((ev,i)=>{const at=3200+Math.random()*5200+i*900;later(()=>{if(state==="run")distract(ev)},at)});
-  later(()=>{if(state==="run"){sparkOn=true;SE.spark()}},12500);
-  later(()=>{if(state==="run")explode()},14000);
+  later(()=>{if(state==="run"){sparkOn=true;SE.spark()}},13500);
+  later(()=>{if(state==="run")explode()},15000);
 }
 function pop(text,pos,color,scale){const s=sprite(text,scale||0.9,{size:100,color:color||"#fff",stroke:"#1f2430"});s.position.copy(pos);addFx(s,1.4,new THREE.Vector3(0,0.15,0))}
 function distract(ev){
@@ -423,7 +424,7 @@ function stopMw(){
   inLight.intensity=0.4;inGlow.material.opacity=0.12;setBig("ストップ","stop",true);
   drawDisp(t.toFixed(2),"#7dffb0");SE.chin();bgmMode="end";
   const err=Math.abs(t-10);
-  let kind=t<9.5?"cold":t<=10.5?"good":t<12.5?"hard":"burnt";
+  let kind=t<8?"cold":t<=12?"good":t<13.5?"hard":"burnt";
   result={t,err,kind,d:kind==="good"?distFor(err):0};
   later(()=>{doorTarget=-1.75;SE.door()},700);
   if(kind==="good")later(goodResult,1300);
@@ -431,7 +432,7 @@ function stopMw(){
 }
 function explode(){
   if(state!=="run")return;
-  state="stopped";clearAll();humStop();sparkOn=false;boomed=true;elapsed=14;
+  state="stopped";clearAll();humStop();sparkOn=false;boomed=true;elapsed=15;
   SE.boom();shake=0.9;inLight.intensity=0;inGlow.material.opacity=0;setBig("ストップ","stop",true);
   drawDisp("ERR","#ff5a4a");
   // ドアが吹き飛ぶ
@@ -440,7 +441,7 @@ function explode(){
   setBunLook("burnt");
   for(let i=0;i<30;i++)puff(new THREE.Vector3(-0.13,1.2,-1.35),0.3+Math.random()*0.4,2.2,new THREE.Vector3((Math.random()-.5)*1.4,0.4+Math.random()*0.8,0.6+Math.random()*1.4),scene,0.75).s.material.color.set(0x3a3a3a);
   pop("ボンッ！！",new THREE.Vector3(0,1.75,-1.2),"#ff5a4a",1.4);
-  result={t:14,err:4,kind:"boom",d:0};
+  result={t:15,err:5,kind:"boom",d:0};
   bgmMode="end";later(()=>badResult("boom"),1400);
 }
 function finishCommon(){
@@ -452,9 +453,9 @@ function finishCommon(){
     showBest();return upd}
   return []}
 function goodResult(){
-  setBunLook("fresh");SE.steam();
+  setBunLook(result.t>10.5?"firm":"fresh");SE.steam();
   for(let i=0;i<16;i++)later(()=>puff(new THREE.Vector3(-0.13+(Math.random()-.5)*0.15,1.08,-1.45+Math.random()*0.1),0.12,1.6,new THREE.Vector3((Math.random()-.5)*0.1,0.35,0.15),scene,0.85),i*60);
-  msg.textContent=`${result.t.toFixed(2)} 秒`;rankEl.textContent="ほかほか……いい匂い";
+  msg.textContent=`${result.t.toFixed(2)} 秒`;rankEl.textContent=result.t<9.5?"ちょっとぬるいけど……いい匂い":result.t>10.5?"ちょっと固めだけど……いい匂い":"ほかほか……いい匂い";
   later(()=>{
     // 香りが旅に出る
     state="travel";bgmMode="travel";SE.whoosh();camMode="toWindow";
@@ -469,10 +470,11 @@ function endTravel(){
   SE.fanfare();
   distEl.innerHTML=`${fmtDist(d)}<small>肉まんの香りが届いた距離</small><em>${title}</em>`;
   distEl.classList.remove("slam");void distEl.offsetWidth;distEl.classList.add("slam");
-  const rank=err<0.03?"神の体内時計":err<0.1?"レンジの申し子":err<0.25?"台所の常連":"まあまあ温か";
+  const rank=err<0.03?"神の体内時計":err<0.1?"レンジの申し子":err<0.3?"台所の常連":err<1?"まあまあ温か":"ギリギリおいしい";
+  const note=t<9.5?"（ちょっとぬるい）":t>10.5?"（ちょっと固め）":"";
   const upd=finishCommon();
   msg.textContent=`${t.toFixed(2)} 秒（誤差 ${err.toFixed(2)} 秒）`;
-  rankEl.textContent=rank+(upd.length?`　${upd.join("・")}ベスト更新！`:"");
+  rankEl.textContent=rank+note+(upd.length?`　${upd.join("・")}ベスト更新！`:"");
   showActions(`壊れたレンジで体感10秒チン！\n${t.toFixed(2)}秒（誤差${err.toFixed(2)}秒）で、肉まんの香りが${fmtDist(d)}先まで届いた【${rank}】`);
 }
 function badResult(kind){
@@ -487,7 +489,7 @@ function badResult(kind){
     showActions(`壊れたレンジで体感10秒チン…\n${t.toFixed(2)}秒も温めて、肉まんがカッチカチ【石になった肉まん】`)}
   if(kind==="burnt"){setBunLook("burnt");SE.clunk();pop("黒こげ",at,"#ff8a3d",0.9);
     for(let i=0;i<10;i++)later(()=>puff(new THREE.Vector3(-0.13,1.1,-1.4),0.15,1.8,new THREE.Vector3((Math.random()-.5)*0.1,0.3,0.15),scene,0.7).s.material.color.set(0x444444),i*80);
-    msg.textContent=`${t.toFixed(2)} 秒`;rankEl.textContent="火花が散る寸前【黒こげ職人】";
+    msg.textContent=`${t.toFixed(2)} 秒`;rankEl.textContent="火花が散っていた【黒こげ職人】";
     showActions(`壊れたレンジで体感10秒チン…\n${t.toFixed(2)}秒で止めたら、肉まんが黒こげ【黒こげ職人】`)}
   if(kind==="boom"){
     msg.textContent="止めそびれた";rankEl.textContent="レンジが爆発した【レンジ爆発】";
