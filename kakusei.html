@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>三時間目の覚醒｜ひらめき文庫</title>
-<meta name="description" content="授業中に覚醒した高校生が、校庭に降りてきたエイリアンを魔法で撃退。60秒で何体倒せるか。">
+<meta name="description" content="退屈な授業中、覚醒して校庭の宇宙人を魔法で撃退する妄想。1体でも通したらアウト。">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ひらめき文庫">
 <meta property="og:title" content="三時間目の覚醒｜ひらめき文庫">
-<meta property="og:description" content="授業中に覚醒した高校生が、校庭に降りてきたエイリアンを魔法で撃退。60秒で何体倒せるか。">
+<meta property="og:description" content="退屈な授業中、覚醒して校庭の宇宙人を魔法で撃退する妄想。1体でも通したらアウト。">
 <meta property="og:url" content="https://hiramekibunko.github.io/hirameki-bunko/kakusei.html">
 <meta property="og:image" content="https://hiramekibunko.github.io/hirameki-bunko/kakusei.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -42,6 +42,11 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-body);display:g
 .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
 .vig{position:absolute;inset:0;pointer-events:none;opacity:0;box-shadow:inset 0 0 80px 30px rgba(255,40,60,.75)}
+.dream{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 1.2s;
+  box-shadow:inset 0 0 70px 26px rgba(255,200,250,.55);background:radial-gradient(ellipse at center,transparent 58%,rgba(210,180,255,.28))}
+.dream.on{opacity:1}
+.rule{justify-self:end;text-align:right;font-size:11px;font-weight:700;line-height:1.35;letter-spacing:.06em;color:#fff}
+.rule b{color:var(--danger)}
 .top{position:absolute;top:10px;left:12px;right:12px;display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:8px;pointer-events:none;
   text-shadow:0 2px 0 rgba(0,0,0,.55);font-variant-numeric:tabular-nums}
 .top .t{font-family:var(--font-display);font-size:22px;line-height:1}
@@ -100,10 +105,12 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-body);display:g
   <div class="stage" id="stage" tabindex="0" role="application" aria-label="三時間目の覚醒。タップした場所に魔法を撃つ">
     <div class="flash" id="flash"></div>
     <div class="vig" id="vig"></div>
+    <div class="dream" id="dream"></div>
     <div class="top" id="top" hidden>
       <div class="t"><span id="time">60</span><small>残り秒</small></div>
       <div class="k"><span id="kills">0</span><small>撃退</small></div>
-      <div class="hp"><small>校舎の無事度 <b id="hpn">100</b>%</small><div class="bar2"><i id="hpbar"></i></div></div>
+      <div class="hp" hidden><small>校舎の無事度 <b id="hpn">100</b>%</small><div class="bar2"><i id="hpbar"></i></div></div>
+      <div class="rule">宇宙人を<br><b>1体でも</b>通したら<br>アウト</div>
     </div>
     <div class="combo" id="combo"></div>
     <div class="banner" id="banner"></div>
@@ -113,7 +120,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-body);display:g
     <button class="skip" id="skip" type="button" hidden>スキップ ▶</button>
     <div class="hud" id="hud">
       <div class="msg" id="msg">タップで授業開始</div>
-      <div class="rank" id="rank" aria-live="polite">三時間目、数学。眠い……</div>
+      <div class="rank" id="rank" aria-live="polite">三時間目、数学。退屈……</div>
       <div class="actions" id="actions" hidden>
         <div class="row">
           <a class="btn x" id="share" href="#" target="_blank" rel="noopener">𝕏 でシェア</a>
@@ -130,7 +137,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-body);display:g
 const $=id=>document.getElementById(id);
 const stage=$("stage"),msg=$("msg"),rankEl=$("rank"),topEl=$("top"),timeEl=$("time"),killsEl=$("kills"),hpnEl=$("hpn"),hpbar=$("hpbar"),
   comboEl=$("combo"),bannerEl=$("banner"),distEl=$("dist"),gaugeEl=$("gauge"),gbar=$("gbar"),specialBtn=$("special"),skipBtn=$("skip"),
-  flashEl=$("flash"),vigEl=$("vig"),actions=$("actions"),shareA=$("share"),againBtn=$("again"),muteBtn=$("mute");
+  flashEl=$("flash"),vigEl=$("vig"),dreamEl=$("dream"),actions=$("actions"),shareA=$("share"),againBtn=$("again"),muteBtn=$("mute");
 if(!window.THREE){msg.textContent="3Dを読み込めませんでした";rankEl.textContent="通信状態を確認して再読み込みしてください";return}
 
 /* ---------- 記録 ---------- */
@@ -301,18 +308,22 @@ function makeStudent(sitting){
   const eyesN=new THREE.Group(),eyesS=new THREE.Group(),eyesG=new THREE.Group();head.add(eyesN);head.add(eyesS);head.add(eyesG);
   for(const x of[-0.09,0.09]){ball(0.032,0x1f2430,x,0.02,0.235,eyesN);box(0.08,0.015,0.02,0x1f2430,x,0.0,0.25,eyesS,false);
     const ge=ball(0.04,basic(0xfff1a8),x,0.02,0.23,eyesG);const gl=glowSprite(TEX.gold,0.28);gl.position.set(x,0.02,0.27);eyesG.add(gl)}
+  const mouthS=new THREE.Mesh(new THREE.TorusGeometry(0.07,0.016,6,14,Math.PI),mat(0x7a2e2e));mouthS.rotation.z=Math.PI;mouthS.position.set(0,-0.08,0.235);mouthS.visible=false;head.add(mouthS);
+  const mouthO=new THREE.Mesh(new THREE.TorusGeometry(0.04,0.016,6,14),mat(0x7a2e2e));mouthO.position.set(0,-0.11,0.235);mouthO.visible=false;head.add(mouthO);
   const arms=[];for(const x of[-0.4,0.4]){const a=new THREE.Group();a.position.set(x,0.64,0);upper.add(a);box(0.16,0.62,0.16,NAVY,0,-0.3,0,a);ball(0.085,SKIN,0,-0.63,0,a);arms.push(a)}
   const hand=glowSprite(TEX.magic,0.6);hand.position.set(0,-0.66,0);hand.visible=false;arms[1].add(hand);
   const aura=glowSprite(TEX.gold,3.4);aura.position.set(0,1.1,-0.1);aura.material.opacity=0;g.add(aura);
-  return {g,legs,upper,torso,head,hair,spikes,eyesN,eyesS,eyesG,arms,hand,aura}
+  return {g,legs,upper,torso,head,hair,spikes,eyesN,eyesS,eyesG,arms,hand,aura,mouthS,mouthO}
 }
 function setEyes(st,k){st.eyesN.visible=k==="n";st.eyesS.visible=k==="s";st.eyesG.visible=k==="g"}
 function makeTeacher(parent){
   const g=new THREE.Group();parent.add(g);
   for(const z of[-0.12,0.12])box(0.18,0.8,0.18,0x3b4654,0,0.4,z,g);
   box(0.5,0.85,0.55,0x56677a,0,1.22,0,g);box(0.03,0.32,0.06,0xb2433a,-0.27,1.38,0,g);
-  const h=new THREE.Group();h.position.set(0,1.92,0);g.add(h);ball(0.26,SKIN,0,0,0,h);const hr=ball(0.28,0x5a5a5a,0,0.05,0,h);hr.scale.set(1,0.55,1);
-  for(const z of[-0.09,0.09]){const gl=new THREE.Mesh(new THREE.TorusGeometry(0.065,0.012,8,20),mat(0x1f2430));gl.position.set(-0.25,0.02,z);gl.rotation.y=Math.PI/2;h.add(gl)}
+  const h=new THREE.Group();h.position.set(0,1.92,0);g.add(h);ball(0.26,SKIN,0,0,0,h);const hr=new THREE.Mesh(new THREE.SphereGeometry(0.275,20,12,0,Math.PI*2,0,Math.PI*0.42),mat(0x6a6a6a));hr.position.set(0.04,0.02,0);hr.rotation.z=-0.35;h.add(hr);
+  for(const z of[-0.09,0.09]){const gl=new THREE.Mesh(new THREE.TorusGeometry(0.062,0.007,6,20),mat(0x1f2430));gl.position.set(-0.255,0.03,z);gl.rotation.y=Math.PI/2;h.add(gl);
+    ball(0.022,0x1f2430,-0.245,0.03,z,h)}
+  box(0.02,0.035,0.16,0x4a4a4a,-0.25,-0.09,0,h,false);box(0.2,0.02,0.02,0x1f2430,-0.12,0.05,0.24,h,false);box(0.2,0.02,0.02,0x1f2430,-0.12,0.05,-0.24,h,false);
   return g}
 
 /* ---------- 教室（オープニング） ---------- */
@@ -407,12 +418,20 @@ const rTeacher=makeTeacher(field);rTeacher.position.set(-2.2,12.45,2.2);rTeacher
 // UFO
 const ufo=makeUFO(1.5);ufo.g.position.set(0,11.5,-54);field.add(ufo.g);
 const BCAM={pos:new THREE.Vector3(0,18.5,6.5),look:new THREE.Vector3(0,1.5,-27)};
+const LINE_Z=-18;
+const halfW=z=>6.2+Math.max(0,LINE_Z-z)*0.24;   // その奥行きで画面に収まる横幅の半分
+(function(){
+  const line=new THREE.Mesh(new THREE.PlaneGeometry(70,0.45),basic(0xff4d5e));line.rotation.x=-Math.PI/2;line.position.set(0,0.03,LINE_Z+0.4);field.add(line);
+  for(let x=-30;x<=30;x+=1.6){box(1.5,0.35,1.1,0x8a5a3a,x,0.175,LINE_Z+1.4,field);
+    for(let k=0;k<3;k++){const f=new THREE.Mesh(new THREE.SphereGeometry(0.22,8,6),mat([0xff6b8a,0xffd23f,0xffffff,0xb48cff][(Math.round(x)+k)&3]));f.position.set(x-0.45+k*0.45,0.5,LINE_Z+1.4+(k%2?0.2:-0.2));field.add(f)}}
+  const tag=sprite("防衛ライン",2.6,{size:110,color:"#fff",stroke:"#d4283c"});tag.material.depthTest=true;tag.position.set(-3.6,1.5,LINE_Z+0.4);field.add(tag);
+})();
 
 /* ---------- エイリアン ---------- */
 const ATYPE={
-  green:{c:0x7ddc6a,head:0.55,speed:3.8,hp:1,dmg:5,scale:1.9},
-  pink:{c:0xff8fc8,head:0.42,speed:6.8,hp:1,dmg:4,scale:1.5},
-  purple:{c:0x9b7bff,head:0.75,speed:2.5,hp:3,dmg:12,scale:2.5}};
+  green:{c:0x7ddc6a,head:0.55,speed:3.3,hp:1,dmg:5,scale:1.9},
+  pink:{c:0xff8fc8,head:0.42,speed:5.6,hp:1,dmg:4,scale:1.5},
+  purple:{c:0x9b7bff,head:0.75,speed:2.2,hp:3,dmg:12,scale:2.5}};
 const aliens=[];
 function makeAlien(type,x,z){
   const T=ATYPE[type];const g=new THREE.Group();g.position.set(x,0,z);field.add(g);
@@ -428,7 +447,7 @@ function makeAlien(type,x,z){
   const pips=[];if(T.hp>1){for(let i=0;i<T.hp;i++){const p=ball(0.11,basic(0xff4d5e),-0.25+i*0.25,T.head+0.75,0,head);pips.push(p)}}
   g.scale.setScalar(T.scale);
   const a={g,body,head,type,hp:T.hp,speed:T.speed*(0.85+Math.random()*0.3),dmg:T.dmg,pips,phase:Math.random()*6,sway:(Math.random()-.5)*1.4,dead:false,dying:0,spin:0,vel:null,
-    targetX:x*0.6+(Math.random()-.5)*20,state:"walk",drop:0};
+    targetX:(Math.random()-.5)*2*(halfW(LINE_Z)-1.4),startX:x,startZ:z,state:"walk",drop:0};
   aliens.push(a);return a}
 function removeAlien(a){field.remove(a.g);const i=aliens.indexOf(a);if(i>=0)aliens.splice(i,1)}
 
@@ -454,23 +473,25 @@ function goIdle(){
   setEyes(hero,"s");hero.upper.rotation.x=0.95;hero.head.rotation.x=0.35;hero.arms.forEach((a,i)=>{a.rotation.x=-0.75;a.rotation.z=i?0.55:-0.55});
   hero.aura.material.opacity=0;hero.spikes.forEach(s=>s.scale.set(1,1,1));
   for(const s of hero.spikes){s.material.color.set(HAIR)}hero.hair.children[0].material.color.set(HAIR);
-  hero.g.position.y=0;cUfo.g.position.set(-19,10,8);cUfo.halo.material.opacity=0.6;cUfo.beam.material.opacity=0;zzz.visible=true;
+  hero.g.position.y=0;hero.head.rotation.z=0;hero.mouthS.visible=false;hero.mouthO.visible=false;teacher.position.set(1.0,0,-3.6);teacher.rotation.y=-0.3;dreamEl.classList.remove("on");
+  cUfo.g.position.set(-19,10,8);cUfo.halo.material.opacity=0.6;cUfo.beam.material.opacity=0;zzz.visible=true;
   camK.pos.set(-0.7,2.05,-1.9);camK.look.set(-3.7,1.1,1.0);camera.position.copy(camK.pos);camLook.copy(camK.look);
   topEl.hidden=true;gaugeEl.hidden=true;specialBtn.hidden=true;skipBtn.hidden=true;distEl.innerHTML="";distEl.classList.remove("slam");
   kills=0;hp=100;combo=0;maxCombo=0;gauge=0;spawnT=0;gameT=0;waves={20:false,40:false};lastWarned=false;
   for(const c of cracks)c.visible=false;for(const w of windows)w.material=winMat;school.rotation.set(0,0,0);school.position.set(0,0,0);
   fighter.g.position.set(0,12.45,0.9);fighter.g.rotation.set(0,Math.PI,0);rTeacher.visible=false;ufo.g.position.set(0,11.5,-54);ufo.g.visible=true;ufo.beam.material.opacity=0;
-  msg.textContent="タップで授業開始";rankEl.textContent="三時間目、数学。眠い……";updHud();
+  msg.textContent="タップで授業開始";rankEl.textContent="三時間目、数学。退屈……";updHud();
 }
 const tb=(text,pos,color,scale,life)=>popText(classroom,text,pos,color,scale,life);
 function startIntro(){
   if(state!=="idle")return;state="intro";skipBtn.hidden=false;introStart=performance.now();
   msg.textContent="先生「ここ、テストに出るぞ〜」";rankEl.textContent="";
-  later(()=>{SE.rumble();shake=0.8;cUfo.halo.material.opacity=0.9;flash(0.35,0.8);msg.textContent="ゴゴゴゴゴ……";rankEl.textContent="校庭に何かが降りてくる";SE.ufo()},1600);
-  later(()=>{setEyes(hero,"n");zzz.visible=false;SE.gasp();tb("……！",new THREE.Vector3(-3.2,2.1,0.9),"#fff",1.0,1.2);heroUp=true;msg.textContent="……！";rankEl.textContent=""},3100);
-  later(()=>{setEyes(hero,"g");SE.awaken();camK.pos.set(-3.05,1.62,-0.15);camK.look.set(-3.2,1.55,1.22);powerUp=true;msg.textContent="";},4000);
-  later(()=>{flash(1,0.6);banner("覚　醒","三時間目、目覚める");shake=1.0},5300);
-  later(enterBattle,6700);
+  later(()=>{msg.textContent="（……つまんない。今、校庭にUFOが来たら……）";rankEl.textContent="妄想スタート";dreamEl.classList.add("on");setEyes(hero,"n");zzz.visible=false;heroUp=true},1500);
+  later(()=>{SE.rumble();shake=0.8;cUfo.halo.material.opacity=0.9;flash(0.35,0.8);msg.textContent="ゴゴゴゴゴ……";rankEl.textContent="校庭に何かが降りてくる";SE.ufo()},3000);
+  later(()=>{SE.gasp();tb("……！",new THREE.Vector3(-3.2,2.1,0.9),"#fff",1.0,1.2);msg.textContent="（……ついに、オレの力が目覚める時が来た）";rankEl.textContent=""},4300);
+  later(()=>{setEyes(hero,"g");SE.awaken();camK.pos.set(-3.05,1.62,-0.15);camK.look.set(-3.2,1.55,1.22);powerUp=true;msg.textContent="";},5300);
+  later(()=>{flash(1,0.6);banner("覚　醒","三時間目、目覚める");shake=1.0},6600);
+  later(enterBattle,8000);
 }
 let heroUp=false,powerUp=false,introStart=0;const gameIntroT=()=>(performance.now()-introStart)/1000;
 function enterBattle(){
@@ -478,8 +499,9 @@ function enterBattle(){
   bgmMode="battle";gameT=0;msg.textContent="";rankEl.textContent="";
   camera.position.copy(BCAM.pos).add(new THREE.Vector3(0,3,4));camLook.copy(BCAM.look);
   topEl.hidden=false;gaugeEl.hidden=false;updHud();timeEl.textContent="60";
-  banner("校舎を守れ！","タップした所に魔法を撃て");
-  later(()=>{state="battle";spawnT=0.3},1300);
+  banner("校舎を守れ！","1体も防衛ラインを越えさせるな");dreamEl.classList.add("on");
+  rankEl.textContent="タップした所に魔法が飛ぶ（連打OK）";later(()=>{if(state==="battle")rankEl.textContent=""},5500);
+  later(()=>{state="battle";spawnT=0.6},1500);
 }
 skipBtn.addEventListener("pointerdown",e=>{e.stopPropagation()});
 skipBtn.addEventListener("click",e=>{e.stopPropagation();if(state==="intro"){bannerEl.classList.remove("on");enterBattle()}});
@@ -535,37 +557,53 @@ specialBtn.addEventListener("pointerdown",e=>{e.stopPropagation();e.preventDefau
 function timeUp(){
   state="ending";bgmMode="none";SE.chime();banner("キーンコーン","終業のチャイム");specialBtn.hidden=true;
   ending={t:0,kind:"time"};
-  later(()=>{SE.beam();ufo.beam.material.opacity=0.35;for(const a of aliens)if(!a.dead){a.state="lift";a.drop=0}},1600);
-  later(()=>{ufo.beam.material.opacity=0;ending.fly=true},4200);
-  later(()=>finish("time"),5600);
+  later(()=>{SE.beam();ufo.beam.material.opacity=0.35;for(const a of aliens)if(!a.dead){a.state="lift";a.drop=0}},1500);
+  later(()=>{ufo.beam.material.opacity=0;ending.fly=true},3800);
+  later(()=>toReality("time"),5000);
 }
-function gameOver(){
-  state="ending";bgmMode="none";SE.collapse();shake=1.6;banner("校舎崩壊","");specialBtn.hidden=true;
-  for(const w of windows)if(Math.random()<0.8)w.material=winBroken;for(const c of cracks)c.visible=true;
-  ending={t:0,kind:"over"};
-  later(()=>finish("over"),3200);
+function breach(a){
+  if(state!=="battle")return;
+  state="ending";bgmMode="none";specialBtn.hidden=true;hurtFlash();shake=0.8;SE.wall();
+  banner("突破された！","宇宙人が防衛ラインを越えた");
+  a.state="rush";ending={t:0,kind:"over"};
+  for(const o of aliens)if(o!==a&&!o.dead&&o.state==="walk")o.state="cheer";
+  later(()=>{SE.collapse();shake=1.6;for(const w of windows)if(Math.random()<0.8)w.material=winBroken;for(const c of cracks)c.visible=true;ending.collapse=true;
+    banner("校舎崩壊","");camera.position.set(8.5,15.2,-12.5);camLook.set(-1.2,10.2,1.2);ending.view=true},1400);
+  later(()=>toReality("over"),3600);
+}
+function toReality(kind){
+  // 妄想が終わって、現実の教室に戻る
+  flash(1,0.9);dreamEl.classList.remove("on");active=classroom;clearFx();
+  topEl.hidden=true;gaugeEl.hidden=true;specialBtn.hidden=true;
+  hero.aura.material.opacity=0;hero.g.position.y=0;hero.spikes.forEach(sp=>{sp.scale.set(1,1,1);sp.material.color.set(HAIR)});hero.hair.children[0].material.color.set(HAIR);
+  hero.upper.rotation.set(0,0,0);hero.head.rotation.set(0,0,0);
+  teacher.position.set(-2.0,0,1.5);teacher.rotation.y=-0.7;
+  if(kind==="over"){setEyes(hero,"n");hero.mouthO.visible=true;hero.mouthS.visible=false;hero.arms.forEach((a,i)=>{a.rotation.x=-2.9;a.rotation.z=i?0.4:-0.4});hero.g.position.y=0.35;
+    tb("うわぁっ！",new THREE.Vector3(-3.2,2.5,1.0),"#fff",1.3,1.6)}
+  else{setEyes(hero,"s");hero.mouthS.visible=true;hero.mouthO.visible=false;hero.arms.forEach(a=>{a.rotation.x=-0.5;a.rotation.z=0});hero.head.rotation.z=0.18;
+    tb("むふふ……",new THREE.Vector3(-3.2,2.3,1.0),"#ffe9a8",1.1,1.6)}
+  camK.pos.set(-1.4,2.2,-2.6);camK.look.set(-2.6,1.3,1.2);camera.position.set(-1.2,2.6,-3.4);camLook.copy(camK.look);
+  heroUp=false;powerUp=false;cUfo.g.position.set(-19,40,8);zzz.visible=false;
+  later(()=>finish(kind),1100);
 }
 function finish(kind){
   state="end";topEl.hidden=true;gaugeEl.hidden=true;
-  if(kind==="time"){flash(0.9,0.7);camera.position.set(8.5,15.2,-12.5);camLook.set(-1.2,10.2,1.2)}
-  rTeacher.visible=true;
-  const hpi=Math.max(0,Math.round(hp));
   let line;
-  if(kind==="over")line="……廊下に立ってなさい";
-  else if(hpi>=90&&kills>=60)line="……今日の居眠りは見逃してやろう";
-  else if(hpi>=60)line="校舎は守ったようだな。で、さっきの問題の答えは？";
-  else if(hpi>=30)line="窓ガラスの弁償、親御さんに連絡しておくからな";
-  else line="放課後、職員室に来なさい";
-  const rank=kind==="over"?"校舎崩壊":kills<25?"寝ぼけた勇者":kills<50?"放課後ヒーロー":kills<85?"学園の守護者":"伝説の三時間目";
-  let upd=false;if(!bestK||kills>bestK){bestK=kills;upd=true;try{localStorage.setItem("hb-kakusei-best",String(kills))}catch(e){}}
-  distEl.innerHTML=`${kills}<span style="font-size:.5em"> 体</span><small>撃退したエイリアン</small><em>校舎の無事度 ${hpi}%　最大 ${maxCombo} コンボ</em>`;
+  if(kind==="over")line="……授業中に叫ぶな。廊下に立ってなさい";
+  else if(kills>=80)line="……ずいぶん楽しそうだったな。で、さっきの答えは？";
+  else if(kills>=50)line="ニヤニヤしてないで、黒板を見なさい";
+  else if(kills>=25)line="チャイム鳴ったぞ。起きてるか？";
+  else line="……寝てたのか？";
+  const rank=kind==="over"?"妄想の中で校舎崩壊":kills<25?"寝ぼけた勇者":kills<50?"放課後ヒーロー":kills<80?"学園の守護者":"伝説の三時間目";
+  let upd=false;if(kills>0&&(!bestK||kills>bestK)){bestK=kills;upd=true;try{localStorage.setItem("hb-kakusei-best",String(kills))}catch(e){}}
+  distEl.innerHTML=`${kills}<span style="font-size:.5em"> 体</span><small>妄想の中で撃退した宇宙人</small><em>${kind==="over"?"防衛ライン突破":"最後まで守り抜いた"}　最大 ${maxCombo} コンボ</em>`;
   distEl.classList.remove("slam");void distEl.offsetWidth;distEl.classList.add("slam");
   msg.textContent=`先生「${line}」`;
   rankEl.textContent=`【${rank}】`+(upd?"　自己ベスト更新！":"")+(bestK&&!upd?`　ベスト ${bestK} 体`:"");
   if(kind==="over"){bgmMode="lose";SE.sad()}else{bgmMode="win";SE.fanfare()}
   showActions(kind==="over"
-    ?`授業中に覚醒して校庭のエイリアンと戦ったけど、校舎が崩壊した……\n撃退 ${kills} 体【${rank}】\n先生「${line}」`
-    :`授業中に覚醒して、校庭のエイリアンを ${kills} 体撃退！\n校舎の無事度 ${hpi}%【${rank}】\n先生「${line}」`);
+    ?`つまらない授業中、覚醒して宇宙人と戦う妄想をしたら、校舎を壊された……\n撃退 ${kills} 体【${rank}】\n先生「${line}」`
+    :`つまらない授業中、覚醒して校庭の宇宙人を ${kills} 体撃退する妄想をした【${rank}】\n先生「${line}」`);
 }
 
 /* ---------- 入力 ---------- */
@@ -589,7 +627,7 @@ function tick(now){
   // --- オープニング
   if(active===classroom){
     cUfo.g.rotation.y+=rdt*1.5;cUfo.lights.forEach((l,i)=>l.visible=Math.floor(now/180+i)%2===0);
-    if(state==="intro"&&gameIntroT()>1.5){cUfo.g.position.lerp(tmp.set(-13,3.6,6.5),ease(1.8))}
+    if(state==="intro"&&gameIntroT()>3.0){cUfo.g.position.lerp(tmp.set(-13,3.6,6.5),ease(1.8))}
     zzz.position.y=1.9+Math.sin(now/400)*0.08;
     if(heroUp){hero.upper.rotation.x+=(0-hero.upper.rotation.x)*ease(6);hero.head.rotation.x+=(-0.05-hero.head.rotation.x)*ease(6);
       hero.arms.forEach((a,i)=>{a.rotation.x+=((powerUp?-0.2:-0.6)-a.rotation.x)*ease(6);a.rotation.z+=((powerUp?(i?0.5:-0.5):0)-a.rotation.z)*ease(4)})}
@@ -602,7 +640,7 @@ function tick(now){
   // --- バトル
   if(active===field){
     ufo.g.rotation.y+=rdt*1.2;ufo.lights.forEach((l,i)=>l.visible=Math.floor(now/150+i)%2===0);
-    if(state==="battle"||state==="countdown")ufo.g.position.x=Math.sin(now/1700)*16;
+    if(state==="battle"||state==="countdown")ufo.g.position.x=Math.sin(now/1700)*9;
     fighter.aura.scale.setScalar(3.4+Math.sin(now/90)*0.25);
     if(Math.random()<0.4){const p=fighter.g.position.clone().add(new THREE.Vector3((Math.random()-.5)*1.1,0.2+Math.random()*1.6,(Math.random()-.5)*0.8));const s=glowSprite(TEX.gold,0.28);s.position.copy(p);addFx(s,field,{life:0.7,vel:new THREE.Vector3(0,2.6,0)})}
     if(castT>0){castT-=rdt;if(castT<=0){fighter.hand.visible=false}}
@@ -612,11 +650,13 @@ function tick(now){
       if(left<=10&&!lastWarned){lastWarned=true;bgmMode="last";banner("ラスト10秒！","");SE.wave()}
       // 敵の出現
       spawnT-=dt;
-      if(spawnT<=0){const k=Math.min(1,gameT/60);spawnT=1.25-k*0.9;
-        const r=Math.random();const type=gameT>25&&r<0.16?"purple":gameT>10&&r<0.42?"pink":"green";
-        const a=makeAlien(type,ufo.g.position.x+(Math.random()-.5)*6,-50);a.state="drop";a.drop=1;a.g.position.y=9;ufo.beam.material.opacity=0.3}
+      if(spawnT<=0){const k=Math.min(1,gameT/60);spawnT=1.5-k*0.95;
+        const r=Math.random();const type=gameT>28&&r<0.12?"purple":gameT>12&&r<0.4?"pink":"green";
+        const x=Math.max(-halfW(-50)+2,Math.min(halfW(-50)-2,ufo.g.position.x+(Math.random()-.5)*6));
+        const a=makeAlien(type,x,-50);a.state="drop";a.drop=1;a.g.position.y=9;ufo.beam.material.opacity=0.3}
       for(const w of[20,40])if(!waves[w]&&gameT>=w){waves[w]=true;banner(w===20?"第二波！":"大群が来た！","");SE.wave();
-        for(let i=0;i<(w===20?8:12);i++){const x=-24+i*(48/((w===20?8:12)-1));const a=makeAlien(i%4===0&&w===40?"purple":i%3===0?"pink":"green",x,-47-Math.random()*5);a.state="drop";a.drop=1;a.g.position.y=7+Math.random()*4}}
+        const n=w===20?6:8,hw=halfW(-49)-2.5;
+        for(let i=0;i<n;i++){const x=-hw+i*(2*hw/(n-1));const a=makeAlien(i===3&&w===40?"purple":i%3===1?"pink":"green",x,-48-Math.random()*4);a.state="drop";a.drop=1;a.g.position.y=7+Math.random()*4}}
       ufo.beam.material.opacity*=Math.pow(0.1,dt);
       if(comboT>0)comboT-=dt;
       if(gameT>=60)timeUp();
@@ -626,21 +666,21 @@ function tick(now){
       if(a.dead){a.dying-=dt;a.vel.y-=25*dt;a.g.position.addScaledVector(a.vel,dt);a.g.rotation.x+=a.spin*dt;a.g.rotation.z+=a.spin*0.6*dt;a.g.scale.multiplyScalar(Math.pow(0.25,dt));
         if(a.dying<=0)removeAlien(a);continue}
       if(a.state==="drop"){a.g.position.y-=dt*14;if(a.g.position.y<=0){a.g.position.y=0;a.state="walk"}continue}
+      if(a.state==="rush"){a.phase+=dt*20;a.g.position.z+=dt*14;a.body.position.y=Math.abs(Math.sin(a.phase))*0.3;
+        if(a.g.position.z>-1){const p=a.g.position.clone();p.y=2;burst(field,p,16,TEX.dust,2.6,7,1);popText(field,"ドカーン",p.clone().add(new THREE.Vector3(0,2,0)),"#ff4d5e",3.2,1);removeAlien(a)}continue}
+      if(a.state==="cheer"){a.phase+=dt*11;a.body.position.y=Math.abs(Math.sin(a.phase))*0.55;a.body.rotation.z=Math.sin(a.phase*0.5)*0.2;continue}
       if(a.state==="lift"){a.drop+=dt;a.g.position.y+=dt*(4+a.drop*8);a.g.position.x+=(ufo.g.position.x-a.g.position.x)*dt*0.8;a.g.position.z+=(ufo.g.position.z-a.g.position.z)*dt*0.5;a.g.rotation.y+=dt*6;
         if(a.g.position.y>15)removeAlien(a);continue}
       if(a.state!=="walk"||state!=="battle")continue;
       a.phase+=dt*a.speed*2.2;
-      a.g.position.z+=a.speed*dt;a.g.position.x+=(a.targetX-a.g.position.x)*dt*0.12+Math.sin(a.phase*0.3)*a.sway*dt;
+      a.g.position.z+=a.speed*dt;
+      const prog=Math.min(1,Math.max(0,(a.g.position.z-a.startZ)/(LINE_Z-a.startZ)));
+      const wantX=a.startX+(a.targetX-a.startX)*prog+Math.sin(a.phase*0.25)*a.sway*0.8;
+      a.g.position.x+=(wantX-a.g.position.x)*Math.min(1,dt*3);
+      const hw=halfW(a.g.position.z)-0.8;a.g.position.x=Math.max(-hw,Math.min(hw,a.g.position.x));
       a.body.position.y=Math.abs(Math.sin(a.phase))*0.18;a.body.rotation.z=Math.sin(a.phase)*0.12;
       a.body.children.forEach(c=>{if(c.userData.leg!==undefined)c.rotation.x=Math.sin(a.phase+(c.userData.leg>0?0:Math.PI))*0.6});
-      if(a.g.position.z>=-1.2){ // 校舎に到達
-        hp-=a.dmg;SE.wall();shake=Math.max(shake,0.5);hurtFlash();
-        const p=a.g.position.clone();p.y=1.5;burst(field,p,14,TEX.dust,2.2,6,0.9);popText(field,"ドカッ",p.clone().add(new THREE.Vector3(0,1.5,0)),"#ff4d5e",3,0.8);
-        const hidden=cracks.filter(c=>!c.visible);const n=Math.ceil(a.dmg/5);for(let i=0;i<n&&hidden.length;i++){const c=hidden.splice(Math.floor(Math.random()*hidden.length),1)[0];c.position.x=Math.max(-33,Math.min(33,p.x+(Math.random()-.5)*8));c.visible=true}
-        const ws=windows.filter(w=>w.material===winMat&&Math.abs(w.position.x-p.x)<6);if(ws.length)ws[Math.floor(Math.random()*ws.length)].material=winBroken;
-        removeAlien(a);updHud();
-        if(hp<=0){hp=0;updHud();gameOver();break}
-      }
+      if(a.g.position.z>=LINE_Z){breach(a);break}
     }
     // 魔法弾
     for(let i=bolts.length-1;i>=0;i--){const b=bolts[i];
@@ -664,13 +704,14 @@ function tick(now){
     // 終わりの演出
     if(ending){ending.t+=rdt;
       if(ending.fly){ufo.g.position.y+=rdt*(6+ending.t*6);ufo.g.position.z-=rdt*20}
-      if(ending.kind==="over"){school.rotation.z=Math.min(0.06,ending.t*0.03);school.position.y=-Math.min(1.5,ending.t*0.6);if(Math.random()<0.4){const p=new THREE.Vector3((Math.random()-.5)*60,Math.random()*10,0);burst(field,p,3,TEX.dust,3,3,1.2)}}}
+      if(ending.kind==="over"&&ending.collapse){school.rotation.z=Math.min(0.06,ending.t*0.03);school.position.y=-Math.min(1.5,ending.t*0.6);if(Math.random()<0.4){const p=new THREE.Vector3((Math.random()-.5)*60,Math.random()*10,0);burst(field,p,3,TEX.dust,3,3,1.2)}}}
     // カメラ
     let gp,gl;
-    if(state==="end"||(ending&&ending.kind==="over")){gp=tmp.set(8.5,15.2,-12.5);gl=tmp2.set(-1.2,10.2,1.2)}
+    if(ending&&ending.kind==="over"&&ending.view){gp=tmp.set(8.5,15.2,-12.5);gl=tmp2.set(-1.2,10.2,1.2)}
+    else if(ending&&ending.kind==="over"){gp=tmp.copy(BCAM.pos);gl=tmp2.copy(BCAM.look)}
     else if(ending){gp=tmp.set(0,19.5,9.5);gl=tmp2.set(ufo.g.position.x*0.5,Math.min(ufo.g.position.y,30)*0.55,-40)}
     else{gp=tmp.copy(BCAM.pos);gl=tmp2.copy(BCAM.look)}
-    camera.position.lerp(gp,ease(state==="end"||ending?1.4:3));camLook.lerp(gl,ease(ending&&state!=="end"?1.6:3));
+    camera.position.lerp(gp,ease(ending&&ending.view?1.4:ending?1.4:3));camLook.lerp(gl,ease(ending&&state!=="end"?1.6:3));
   }
   if(shake>0){shake-=rdt;camera.position.x+=(Math.random()-.5)*shake*0.5;camera.position.y+=(Math.random()-.5)*shake*0.5}
   camera.lookAt(camLook);
