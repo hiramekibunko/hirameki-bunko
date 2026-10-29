@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>三時間目の覚醒｜ひらめき文庫</title>
-<meta name="description" content="退屈な授業中、覚醒して校庭の宇宙人を魔法で撃退する妄想。1体でも通したらアウト。">
+<meta name="description" content="退屈な授業中、覚醒して校庭の宇宙人を撃退する妄想。宇宙人は20秒ごとに倍増。何秒持ちこたえられるか。">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ひらめき文庫">
 <meta property="og:title" content="三時間目の覚醒｜ひらめき文庫">
-<meta property="og:description" content="退屈な授業中、覚醒して校庭の宇宙人を魔法で撃退する妄想。1体でも通したらアウト。">
+<meta property="og:description" content="退屈な授業中、覚醒して校庭の宇宙人を撃退する妄想。宇宙人は20秒ごとに倍増。何秒持ちこたえられるか。">
 <meta property="og:url" content="https://hiramekibunko.github.io/hirameki-bunko/kakusei.html">
 <meta property="og:image" content="https://hiramekibunko.github.io/hirameki-bunko/kakusei.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -51,6 +51,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-body);display:g
   text-shadow:0 2px 0 rgba(0,0,0,.55);font-variant-numeric:tabular-nums}
 .top .t{font-family:var(--font-display);font-size:22px;line-height:1}
 .top .t small,.top .k small{display:block;font-family:var(--font-body);font-weight:700;font-size:10px;letter-spacing:.14em;opacity:.85}
+.top .t .pace{color:var(--accent);opacity:1;margin-top:3px;font-size:11px}
 .top .k{font-family:var(--font-display);font-size:30px;line-height:1;text-align:center;color:#fff}
 .hp{justify-self:end;width:min(36vw,140px)}
 .hp small{display:block;font-weight:700;font-size:10px;letter-spacing:.14em;text-align:right;opacity:.85}
@@ -107,7 +108,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-body);display:g
     <div class="vig" id="vig"></div>
     <div class="dream" id="dream"></div>
     <div class="top" id="top" hidden>
-      <div class="t"><span id="time">60</span><small>残り秒</small></div>
+      <div class="t"><span id="time">0</span><small>経過秒</small><small class="pace" id="pace">勢い ×1.0</small></div>
       <div class="k"><span id="kills">0</span><small>撃退</small></div>
       <div class="hp" hidden><small>校舎の無事度 <b id="hpn">100</b>%</small><div class="bar2"><i id="hpbar"></i></div></div>
       <div class="rule">宇宙人を<br><b>1体でも</b>通したら<br>アウト</div>
@@ -137,12 +138,12 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-body);display:g
 const $=id=>document.getElementById(id);
 const stage=$("stage"),msg=$("msg"),rankEl=$("rank"),topEl=$("top"),timeEl=$("time"),killsEl=$("kills"),hpnEl=$("hpn"),hpbar=$("hpbar"),
   comboEl=$("combo"),bannerEl=$("banner"),distEl=$("dist"),gaugeEl=$("gauge"),gbar=$("gbar"),specialBtn=$("special"),skipBtn=$("skip"),
-  flashEl=$("flash"),vigEl=$("vig"),dreamEl=$("dream"),actions=$("actions"),shareA=$("share"),againBtn=$("again"),muteBtn=$("mute");
+  flashEl=$("flash"),vigEl=$("vig"),dreamEl=$("dream"),paceEl=$("pace"),actions=$("actions"),shareA=$("share"),againBtn=$("again"),muteBtn=$("mute");
 if(!window.THREE){msg.textContent="3Dを読み込めませんでした";rankEl.textContent="通信状態を確認して再読み込みしてください";return}
 
 /* ---------- 記録 ---------- */
-let bestK=null;
-try{bestK=Number(localStorage.getItem("hb-kakusei-best"))||null}catch(e){}
+let bestK=null,bestT=null;
+try{bestK=Number(localStorage.getItem("hb-kakusei-best"))||null;bestT=Number(localStorage.getItem("hb-kakusei-time"))||null}catch(e){}
 
 /* ---------- 音（Web Audioで合成） ---------- */
 const AC=window.AudioContext||window.webkitAudioContext;
@@ -219,8 +220,8 @@ function startBgm(){
         if(step%2===0)tone(hz(45),next,dur*1.8,{type:"sine",vol:0.12,bus:bgmBus});
         if(step%4===3)noise(next,0.03,{vol:0.03,type:"highpass",f:6000,bus:bgmBus});
       }else if(bgmMode==="battle"||bgmMode==="last"){
-        const last=bgmMode==="last";dur=60/(last?168:156)/2;
-        const lv=last?4:Math.min(3,Math.floor(gameT/15));
+        const last=bgmMode==="last";dur=60/Math.min(204,150+gameT*0.7)/2;
+        const lv=last?4:Math.min(3,Math.floor(gameT/12));
         const b=riff[step%16];
         tone(hz(b),next,dur*0.9,{type:"sawtooth",vol:0.2,bus:bgmBus,lp:900+lv*250});
         tone(hz(b+7),next,dur*0.9,{type:"sawtooth",vol:0.1,bus:bgmBus,lp:900+lv*250});
@@ -453,10 +454,16 @@ function makeAlien(type,x,z){
   const a={g,body,head,type,hp:T.hp,speed:T.speed*(0.85+Math.random()*0.3),dmg:T.dmg,pips,phase:Math.random()*6,sway:(Math.random()-.5)*1.4,dead:false,dying:0,spin:0,vel:null,
     targetX:(Math.random()-.5)*2*(halfW(LINE_Z)-1.4),startX:x,startZ:z,state:"walk",drop:0};
   aliens.push(a);return a}
+function spawnOne(type,x,z,y){const a=makeAlien(type,x,z);a.state="drop";a.drop=1;a.g.position.y=y;a.speed*=1+Math.min(1.2,gameT/120);return a}
+function bigWave(lvl){
+  const n=Math.min(44,Math.round(10*Math.pow(1.55,lvl-1))),rows=Math.ceil(n/14),per=Math.ceil(n/rows);
+  for(let i=0;i<n;i++){const row=Math.floor(i/per),col=i%per;const z=-46-row*2.4;const hw=halfW(z)-1.5;
+    const x=-hw+col*(2*hw/Math.max(1,per-1));const r=Math.random();
+    spawnOne(lvl>=2&&r<0.12?"purple":r<0.38?"pink":"green",x+(Math.random()-.5)*0.8,z,6+Math.random()*5)}}
 function removeAlien(a){field.remove(a.g);const i=aliens.indexOf(a);if(i>=0)aliens.splice(i,1)}
 
 /* ---------- 状態 ---------- */
-const MAX_ALIVE=110;const alive=()=>aliens.reduce((n,a)=>n+(!a.dead&&(a.state==="walk"||a.state==="drop")?1:0),0);
+const MAX_ALIVE=110;let spawnAcc=0,paceLv=0;const alive=()=>aliens.reduce((n,a)=>n+(!a.dead&&(a.state==="walk"||a.state==="drop")?1:0),0);
 let state="idle",timers=[],kills=0,hp=100,combo=0,comboT=0,maxCombo=0,gauge=0,spawnT=0,shake=0,hitStop=0,lastFire=0,waves={},lastWarned=false,ending=null,slowmo=1,speedDbg=1;
 const later=(fn,ms)=>timers.push(setTimeout(fn,ms));
 const clearAll=()=>{timers.forEach(clearTimeout);timers=[]};
@@ -503,8 +510,8 @@ function enterBattle(){
   if(state!=="intro")return;clearAll();state="countdown";skipBtn.hidden=true;active=field;clearFx();flash(1,0.7);heroUp=false;powerUp=false;
   bgmMode="battle";gameT=0;msg.textContent="";rankEl.textContent="";
   camera.position.copy(BCAM.pos).add(new THREE.Vector3(0,3,4));camLook.copy(BCAM.look);
-  topEl.hidden=false;gaugeEl.hidden=false;updHud();timeEl.textContent="60";
-  banner("校舎を守れ！","1体も防衛ラインを越えさせるな");dreamEl.classList.add("on");
+  topEl.hidden=false;gaugeEl.hidden=false;updHud();timeEl.textContent="0";paceEl.textContent="勢い ×1.0";spawnAcc=0;paceLv=0;
+  banner("校舎を守れ！","宇宙人は20秒ごとに倍に増える");dreamEl.classList.add("on");
   rankEl.textContent="タップした所に魔法が飛ぶ（連打OK）";later(()=>{if(state==="battle")rankEl.textContent=""},5500);
   later(()=>{state="battle";spawnT=0.6},1500);
 }
@@ -595,22 +602,21 @@ function toReality(kind){
 }
 function finish(kind){
   state="end";topEl.hidden=true;gaugeEl.hidden=true;
-  let line;
-  if(kind==="over")line="……授業中に叫ぶな。廊下に立ってなさい";
-  else if(kills>=200)line="……ずいぶん楽しそうだったな。で、さっきの答えは？";
-  else if(kills>=120)line="ニヤニヤしてないで、黒板を見なさい";
-  else if(kills>=60)line="チャイム鳴ったぞ。起きてるか？";
-  else line="……寝てたのか？";
-  const rank=kills<40?"寝ぼけた勇者":kills<100?"放課後ヒーロー":kills<180?"学園の守護者":kind==="time"?"伝説の三時間目":"あと一歩の英雄";
-  let upd=false;if(kills>0&&(!bestK||kills>bestK)){bestK=kills;upd=true;try{localStorage.setItem("hb-kakusei-best",String(kills))}catch(e){}}
-  distEl.innerHTML=`${kills}<span style="font-size:.5em"> 体</span><small>妄想の中で撃退した宇宙人</small><em>${kind==="over"?`${Math.floor(gameT)}秒で防衛ライン突破`:"60秒守り抜いた！"}　最大 ${maxCombo} コンボ</em>`;
+  const sec=gameT;let line;
+  if(sec<20)line="……授業中に叫ぶな。廊下に立ってなさい";
+  else if(sec<40)line="何と戦ってたんだ……廊下に立ってなさい";
+  else if(sec<60)line="ずいぶん長い夢だったな。廊下に立ってなさい";
+  else if(sec<80)line="……チャイム鳴ってるぞ。で、さっきの答えは？";
+  else line="……君、明日から地球防衛部に入りなさい";
+  const rank=sec<20?"寝ぼけた勇者":sec<40?"放課後ヒーロー":sec<60?"学園の守護者":sec<80?"伝説の三時間目":"神話になった三時間目";
+  let upd=[];if(sec>1&&(!bestT||sec>bestT)){bestT=sec;upd.push("時間");try{localStorage.setItem("hb-kakusei-time",sec.toFixed(1))}catch(e){}}
+  if(kills>0&&(!bestK||kills>bestK)){bestK=kills;upd.push("撃退数");try{localStorage.setItem("hb-kakusei-best",String(kills))}catch(e){}}
+  distEl.innerHTML=`${sec.toFixed(1)}<span style="font-size:.5em"> 秒</span><small>妄想で持ちこたえた時間</small><em>撃退 ${kills} 体　最大 ${maxCombo} コンボ</em>`;
   distEl.classList.remove("slam");void distEl.offsetWidth;distEl.classList.add("slam");
   msg.textContent=`先生「${line}」`;
-  rankEl.textContent=`【${rank}】`+(upd?"　自己ベスト更新！":"")+(bestK&&!upd?`　ベスト ${bestK} 体`:"");
-  if(kind==="over"){bgmMode="lose";SE.sad()}else{bgmMode="win";SE.fanfare()}
-  showActions(kind==="over"
-    ?`つまらない授業中、覚醒して宇宙人と戦う妄想をしたら、${Math.floor(gameT)}秒で校舎を壊された……\n撃退 ${kills} 体【${rank}】\n先生「${line}」`
-    :`つまらない授業中、覚醒して校庭の宇宙人を ${kills} 体撃退する妄想をした【${rank}】\n先生「${line}」`);
+  rankEl.textContent=`【${rank}】`+(upd.length?`　${upd.join("・")}ベスト更新！`:bestT?`　ベスト ${bestT.toFixed(1)} 秒`:"");
+  bgmMode="lose";SE.sad();
+  showActions(`つまらない授業中、覚醒して宇宙人と戦う妄想を ${sec.toFixed(1)} 秒続けた！\n撃退 ${kills} 体【${rank}】\n先生「${line}」`);
 }
 
 /* ---------- 入力 ---------- */
@@ -653,25 +659,21 @@ function tick(now){
     if(castT>0){castT-=rdt;if(castT<=0){fighter.hand.visible=false}}
     fighter.arms[1].rotation.x+=((castT>0?-2.6:-0.2)-fighter.arms[1].rotation.x)*ease(castT>0?30:6);
     if(state==="battle"){
-      gameT+=dt;const left=Math.max(0,60-gameT);timeEl.textContent=Math.ceil(left);
-      if(left<=10&&!lastWarned){lastWarned=true;bgmMode="last";banner("ラスト10秒！","");SE.wave()}
-      // 敵の出現
-      spawnT-=dt;
-      if(spawnT<=0){const k=gameT;spawnT=k<10?0.8:k<20?0.6:k<35?0.45:k<48?0.33:0.26;
-        const n=(k<10?1:k<35?2:3)+(Math.random()<0.5?1:0);
-        for(let i=0;i<n&&alive()<MAX_ALIVE;i++){
-          const r=Math.random();const type=k>22&&r<0.13?"purple":k>6&&r<0.42?"pink":"green";
-          const hw0=halfW(-50)-2;const x=Math.random()<0.5?Math.max(-hw0,Math.min(hw0,ufo.g.position.x+(Math.random()-.5)*10)):(Math.random()*2-1)*hw0;
-          const a=makeAlien(type,x,-50-Math.random()*2);a.state="drop";a.drop=1;a.g.position.y=8+Math.random()*3}
-        ufo.beam.material.opacity=0.32}
-      for(const w of[20,32,48])if(!waves[w]&&gameT>=w){waves[w]=true;banner(w===20?"第二波！":w===32?"大群が来た！":"もう無理！？",w===48?"校庭が宇宙人であふれる":"");SE.wave();
-        const n=w===20?14:w===32?22:30,rows=w===48?3:2,per=Math.ceil(n/rows);
-        for(let i=0;i<n;i++){const row=Math.floor(i/per),col=i%per;const z=-46-row*2.5;const hw=halfW(z)-1.5;
-          const x=-hw+col*(2*hw/Math.max(1,per-1));const r=Math.random();
-          const a=makeAlien(w>=30&&r<0.1?"purple":r<0.35?"pink":"green",x+(Math.random()-.5)*0.8,z);a.state="drop";a.drop=1;a.g.position.y=6+Math.random()*5}}
+      gameT+=dt;timeEl.textContent=Math.floor(gameT);
+      // 敵の出現：20秒ごとに2倍（指数関数的に増える）
+      const pace=Math.pow(2,gameT/20);paceEl.textContent="勢い ×"+(pace<10?pace.toFixed(1):Math.round(pace));
+      const lvl=Math.floor(gameT/20);
+      if(lvl>paceLv){paceLv=lvl;banner(`勢い ×${Math.pow(2,lvl)}！`,`第${lvl+1}波　宇宙人がさらに増える`);SE.wave();bigWave(lvl);if(lvl>=3)bgmMode="last"}
+      spawnAcc+=dt*1.5*pace;let spawned=false,guard=0;
+      while(spawnAcc>=1&&guard++<16){
+        if(alive()>=MAX_ALIVE){spawnAcc=Math.min(spawnAcc,8);break}
+        spawnAcc-=1;spawned=true;
+        const r=Math.random();const type=gameT>22&&r<Math.min(0.2,0.08+gameT/600)?"purple":gameT>6&&r<0.45?"pink":"green";
+        const hw0=halfW(-50)-2;const x=Math.random()<0.5?Math.max(-hw0,Math.min(hw0,ufo.g.position.x+(Math.random()-.5)*10)):(Math.random()*2-1)*hw0;
+        spawnOne(type,x,-50-Math.random()*2,8+Math.random()*3)}
+      if(spawned)ufo.beam.material.opacity=0.32;
       ufo.beam.material.opacity*=Math.pow(0.1,dt);
       if(comboT>0)comboT-=dt;
-      if(gameT>=60)timeUp();
     }
     // エイリアン
     for(const a of[...aliens]){
