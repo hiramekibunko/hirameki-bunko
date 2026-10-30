@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>学園祭のおばけ役｜ひらめき文庫</title>
-<meta name="description" content="学園祭のお化け屋敷でおばけ役。客が目の前に来た瞬間に飛び出して驚かせ。悲鳴はどこまで届く？">
+<title>学園祭のおばけ屋敷｜ひらめき文庫</title>
+<meta name="description" content="学園祭のおばけ屋敷で、驚かされる瞬間に合わせてタップ。ぴったり合えば平常心。あなたの心拍数は？">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ひらめき文庫">
-<meta property="og:title" content="学園祭のおばけ役｜ひらめき文庫">
-<meta property="og:description" content="学園祭のお化け屋敷でおばけ役。客が目の前に来た瞬間に飛び出して驚かせ。悲鳴はどこまで届く？">
+<meta property="og:title" content="学園祭のおばけ屋敷｜ひらめき文庫">
+<meta property="og:description" content="学園祭のおばけ屋敷で、驚かされる瞬間に合わせてタップ。ぴったり合えば平常心。あなたの心拍数は？">
 <meta property="og:url" content="https://hiramekibunko.github.io/hirameki-bunko/obake.html">
 <meta property="og:image" content="https://hiramekibunko.github.io/hirameki-bunko/obake.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -16,8 +16,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700&family=Zen+Old+Mincho:wght@900&display=swap">
 <style>
-/* 縦長(9:16)の3D画面：お化け屋敷の暗い通路。カーテンの陰から客を驚かす */
-:root{--bg:#06050a;--screen:#140f1c;--fg:#f3eef8;--line:#2e2540;--accent:#ff9a2e;--ghost:#e9f2ff;--danger:#ff4d5e;--good:#7dffb0;
+/* 縦長(9:16)の一人称3D：学園祭のおばけ屋敷を進む。驚かされる瞬間にタップ */
+:root{--bg:#06050a;--screen:#140f1c;--fg:#f3eef8;--line:#2e2540;--accent:#ff9a2e;--danger:#ff4d5e;--good:#7dffb0;
   --font-display:"Dela Gothic One","Zen Kaku Gothic New",system-ui,sans-serif;
   --font-body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
   --font-mincho:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;color-scheme:dark}
@@ -41,30 +41,45 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-body);display:g
 .stage:focus-visible{outline:3px solid var(--accent);outline-offset:-4px}
 .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
-.top{position:absolute;top:10px;left:12px;right:12px;display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:8px;pointer-events:none;
+.vig{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 90px 40px rgba(0,0,0,.85)}
+.redv{position:absolute;inset:0;pointer-events:none;opacity:0;box-shadow:inset 0 0 90px 30px rgba(255,30,50,.8)}
+.top{position:absolute;top:10px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;
   text-shadow:0 2px 0 rgba(0,0,0,.6);font-variant-numeric:tabular-nums}
-.top .g{font-family:var(--font-display);font-size:22px;line-height:1}
+.top .lv{font-family:var(--font-display);font-size:20px;line-height:1}
 .top small{display:block;font-family:var(--font-body);font-weight:700;font-size:10px;letter-spacing:.14em;opacity:.85}
-.top .db{font-family:var(--font-display);font-size:26px;line-height:1;text-align:center;color:var(--accent)}
-.top .c{justify-self:end;text-align:right;font-family:var(--font-display);font-size:18px;line-height:1}
-.judge{position:absolute;top:28%;left:0;right:0;text-align:center;font-family:var(--font-display);font-size:clamp(30px,10vw,50px);letter-spacing:.04em;
+.top .bpm{text-align:right;font-family:var(--font-display);font-size:24px;line-height:1;color:#ff8a9a}
+.top .bpm i{font-style:normal;display:inline-block;animation:beat var(--beat,.85s) ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
+.title{position:absolute;top:30%;left:0;right:0;text-align:center;pointer-events:none;opacity:0}
+.title b{display:block;font-family:var(--font-display);font-weight:400;font-size:clamp(32px,9.5vw,46px);color:#fff;text-shadow:0 4px 0 #1f1030,0 0 20px rgba(160,120,255,.6)}
+.title span{display:block;font-family:var(--font-mincho);font-weight:900;font-size:18px;color:#d8c8ff;margin-top:4px}
+.title.on{animation:ti 2s ease-out forwards}
+@keyframes ti{0%{opacity:0}15%{opacity:1}75%{opacity:1}100%{opacity:0}}
+.judge{position:absolute;top:22%;left:0;right:0;text-align:center;font-family:var(--font-display);font-size:clamp(32px,10vw,50px);
   color:#fff;text-shadow:0 4px 0 #1f1030,0 0 20px rgba(255,154,46,.8);pointer-events:none;opacity:0}
-.judge small{display:block;font-family:var(--font-mincho);font-weight:900;font-size:17px;color:var(--accent);margin-top:4px;letter-spacing:.06em}
-.judge.on{animation:jg 1.3s ease-out forwards}
-@keyframes jg{0%{opacity:0;transform:scale(1.8)}12%{opacity:1;transform:scale(1)}75%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
-.hint{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-size:13px;font-weight:700;opacity:.85;pointer-events:none;text-shadow:0 1px 3px #000}
-.dist{position:absolute;top:22px;left:0;right:0;text-align:center;font-family:var(--font-display);font-size:clamp(30px,10vw,48px);
+.judge small{display:block;font-family:var(--font-mincho);font-weight:900;font-size:16px;color:var(--accent);margin-top:4px;letter-spacing:.04em}
+.judge.on{animation:jg 1.6s ease-out forwards}
+@keyframes jg{0%{opacity:0;transform:scale(1.8)}10%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
+.say{position:absolute;bottom:24%;left:0;right:0;text-align:center;font-family:var(--font-display);font-size:clamp(24px,7vw,34px);color:#ff6b6b;
+  text-shadow:0 3px 0 #000;pointer-events:none;opacity:0}
+.say.on{animation:jg 1.3s ease-out forwards}
+.warn{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;pointer-events:none}
+.warn div{background:rgba(10,6,16,.8);border:1px solid #4a3a60;border-radius:14px;padding:18px 18px 16px;max-width:300px}
+.warn b{display:block;font-family:var(--font-display);font-weight:400;font-size:18px;color:var(--accent);margin-bottom:8px}
+.warn p{margin:0;font-size:13px;line-height:1.7}
+.dist{position:absolute;top:20px;left:0;right:0;text-align:center;font-family:var(--font-display);font-size:clamp(40px,13vw,62px);
   color:#fff;text-shadow:0 3px 0 #1f1030,0 0 14px rgba(0,0,0,.6);font-variant-numeric:tabular-nums;pointer-events:none}
 .dist small{display:block;font-family:var(--font-body);font-weight:700;font-size:13px;letter-spacing:.14em;opacity:.9}
-.dist em{display:block;font-style:normal;font-family:var(--font-mincho);font-weight:900;font-size:17px;color:var(--accent);margin-top:4px}
+.dist em{display:block;font-style:normal;font-family:var(--font-mincho);font-weight:900;font-size:19px;color:var(--accent);margin-top:4px}
 .dist.slam{animation:slam .45s cubic-bezier(.2,1.6,.4,1)}
 @keyframes slam{0%{transform:scale(1.9);opacity:.2}100%{transform:scale(1);opacity:1}}
-.land{position:absolute;top:46%;left:0;right:0;text-align:center;font-family:var(--font-mincho);font-weight:900;font-size:20px;color:#fff;
-  text-shadow:0 2px 0 #000,0 0 14px rgba(0,0,0,.7);pointer-events:none;opacity:0}
-.land.show{animation:land 1s ease-out}
-@keyframes land{0%{opacity:0;transform:translateY(10px) scale(.9)}15%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0;transform:translateY(-12px)}}
+.list{position:absolute;top:40%;left:50%;transform:translateX(-50%);width:min(86%,320px);font-size:13px;pointer-events:none;font-variant-numeric:tabular-nums;
+  background:rgba(10,6,16,.6);border-radius:12px;padding:6px 12px}
+.list div{display:grid;grid-template-columns:3.4em 1fr auto;gap:8px;padding:5px 2px;border-bottom:1px solid rgba(255,255,255,.12)}
+.list div:last-child{border:0}
+.list b{font-family:var(--font-display);font-weight:400}
 .hud{position:absolute;left:0;right:0;bottom:0;padding:44px 16px 14px;text-align:center;pointer-events:none;background:linear-gradient(transparent,rgba(6,5,10,.9))}
-.msg{font-family:var(--font-display);font-size:clamp(19px,5.4vw,26px);letter-spacing:.04em;min-height:1.4em;text-shadow:0 2px 0 #000}
+.msg{font-family:var(--font-display);font-size:clamp(18px,5.2vw,25px);letter-spacing:.04em;min-height:1.4em;text-shadow:0 2px 0 #000}
 .rank{font-family:var(--font-mincho);font-weight:900;font-size:15px;color:var(--accent);min-height:1.5em;text-shadow:0 1px 0 #000}
 .actions{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:10px;pointer-events:auto;animation:pop .35s ease-out}
 .actions .row{display:flex;gap:10px;justify-content:center}
@@ -74,29 +89,33 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-body);display:g
 .btn.x{background:#000;color:#fff;box-shadow:0 0 0 1px #555}
 .btn.again{background:var(--accent);color:#2a1300}
 .support{font-size:12px;color:var(--fg);opacity:.7;text-decoration:underline;text-underline-offset:3px}
-@media (prefers-reduced-motion:reduce){.actions,.dist.slam{animation:none}.judge.on,.land.show{animation-duration:.01s}}
+@media (prefers-reduced-motion:reduce){.actions,.dist.slam,.top .bpm i{animation:none}.judge.on,.title.on,.say.on{animation-duration:.01s}}
 </style>
 </head>
 <body>
 <main class="screen">
   <div class="bar">
     <a href="./">← 棚へ</a>
-    <h1 class="ttl">学園祭のおばけ役</h1>
+    <h1 class="ttl">学園祭のおばけ屋敷</h1>
     <span class="no">ひ-1-5</span>
     <button class="mute" id="mute" type="button" aria-pressed="false">音 ON</button>
   </div>
-  <div class="stage" id="stage" tabindex="0" role="application" aria-label="学園祭のおばけ役。客が目の前に来た瞬間にタップ">
+  <div class="stage" id="stage" tabindex="0" role="application" aria-label="学園祭のおばけ屋敷。驚かされる瞬間にタップ">
     <div class="flash" id="flash"></div>
+    <div class="vig"></div>
+    <div class="redv" id="redv"></div>
     <div class="top" id="top" hidden>
-      <div class="g"><span id="guest">1</span><span style="font-size:.6em">/10</span><small>組目</small></div>
-      <div class="db"><span id="db">0</span><small>悲鳴の合計（dB）</small></div>
-      <div class="c"><span id="combo">-</span><small>連続PERFECT</small></div>
+      <div class="lv">Lv.<span id="lv">1</span><span style="font-size:.6em">/5</span><small>スコア <span id="score">0</span></small></div>
+      <div class="bpm"><i id="heart">♥</i> <span id="bpm">70</span><small>心拍数（bpm）</small></div>
     </div>
+    <div class="title" id="title"></div>
     <div class="judge" id="judge"></div>
+    <div class="say" id="say"></div>
+    <div class="warn" id="warn"><div><b>音が出ます</b><p>大きな音と急な映像があります。<br>イヤホン推奨。音がヒントになります。<br>驚かされる<strong>瞬間</strong>にタップ。</p></div></div>
     <div class="dist" id="dist"></div>
-    <div class="land" id="land"></div>
+    <div class="list" id="list" hidden></div>
     <div class="hud" id="hud">
-      <div class="msg" id="msg">タップでお化け屋敷 開店</div>
+      <div class="msg" id="msg">タップで入場</div>
       <div class="rank" id="rank" aria-live="polite">2年B組　おばけ屋敷</div>
       <div class="actions" id="actions" hidden>
         <div class="row">
@@ -112,14 +131,13 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-body);display:g
 <script>
 (function(){
 const $=id=>document.getElementById(id);
-const stage=$("stage"),msg=$("msg"),rankEl=$("rank"),topEl=$("top"),guestEl=$("guest"),dbEl=$("db"),comboEl=$("combo"),judgeEl=$("judge"),
-  distEl=$("dist"),landEl=$("land"),flashEl=$("flash"),actions=$("actions"),shareA=$("share"),againBtn=$("again"),muteBtn=$("mute");
+const stage=$("stage"),msg=$("msg"),rankEl=$("rank"),topEl=$("top"),lvEl=$("lv"),scoreEl=$("score"),bpmEl=$("bpm"),heartEl=$("heart"),titleEl=$("title"),judgeEl=$("judge"),sayEl=$("say"),
+  warnEl=$("warn"),distEl=$("dist"),listEl=$("list"),flashEl=$("flash"),redvEl=$("redv"),actions=$("actions"),shareA=$("share"),againBtn=$("again"),muteBtn=$("mute");
 if(!window.THREE){msg.textContent="3Dを読み込めませんでした";rankEl.textContent="通信状態を確認して再読み込みしてください";return}
 
 /* ---------- 記録 ---------- */
-let bestD=null;
-try{bestD=Number(localStorage.getItem("hb-obake-dist"))||null}catch(e){}
-function fmtDist(m){if(m<1000)return Math.round(m)+" m";const km=m/1000;return km<100?km.toFixed(1)+" km":Math.round(km).toLocaleString("ja-JP")+" km"}
+let bestBpm=null,bestScore=null;
+try{bestBpm=Number(localStorage.getItem("hb-obake-bpm"))||null;bestScore=Number(localStorage.getItem("hb-obake-score"))||null}catch(e){}
 
 /* ---------- 音（Web Audioで合成） ---------- */
 const AC=window.AudioContext||window.webkitAudioContext;
@@ -131,10 +149,10 @@ function initAudio(){
   if(!AC)return;
   if(ac){if(ac.state==="suspended")ac.resume();return}
   ac=new AC();
-  const comp=ac.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=4;comp.connect(ac.destination);
+  const comp=ac.createDynamicsCompressor();comp.threshold.value=-10;comp.ratio.value=3;comp.connect(ac.destination);
   master=ac.createGain();master.gain.value=muted?0:0.95;master.connect(comp);
   bgmBus=ac.createGain();bgmBus.gain.value=0.6;bgmBus.connect(master);
-  sfxBus=ac.createGain();sfxBus.gain.value=0.8;sfxBus.connect(master);
+  sfxBus=ac.createGain();sfxBus.gain.value=0.85;sfxBus.connect(master);
   noiseBuf=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);
   const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
   startBgm();
@@ -144,65 +162,63 @@ muteBtn.addEventListener("click",e=>{e.stopPropagation();muted=!muted;showMute()
   try{localStorage.setItem("hb-mute",muted?"1":"0")}catch(err){}
   initAudio();if(master)master.gain.setTargetAtTime(muted?0:0.95,ac.currentTime,0.02)});
 function tone(f,t,dur,{type="sine",vol=0.3,to=null,bus=sfxBus,attack=0.005,lp=null,vib=0}={}){
-  if(!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.type=type;
+  if(!ac||!(vol>0.0005))return;const o=ac.createOscillator(),g=ac.createGain();o.type=type;
   o.frequency.setValueAtTime(f,t);if(to)o.frequency.exponentialRampToValueAtTime(to,t+dur);
   if(vib){const l=ac.createOscillator(),lg=ac.createGain();l.frequency.value=5.5;lg.gain.value=vib;l.connect(lg);lg.connect(o.frequency);l.start(t);l.stop(t+dur+0.05)}
   g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+attack);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
   let n=o;if(lp){const fl=ac.createBiquadFilter();fl.type="lowpass";fl.frequency.value=lp;o.connect(fl);n=fl}
   n.connect(g);g.connect(bus);o.start(t);o.stop(t+dur+0.02)}
 function noise(t,dur,{vol=0.3,type="lowpass",f=1000,to=null,q=1,attack=0.005,bus=sfxBus}={}){
-  if(!ac)return;const s=ac.createBufferSource(),fl=ac.createBiquadFilter(),g=ac.createGain();
+  if(!ac||!(vol>0.0005))return;const s=ac.createBufferSource(),fl=ac.createBiquadFilter(),g=ac.createGain();
   s.buffer=noiseBuf;s.loop=true;fl.type=type;fl.Q.value=q;fl.frequency.setValueAtTime(f,t);
   if(to)fl.frequency.exponentialRampToValueAtTime(to,t+dur);
   g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+attack);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
   s.connect(fl);fl.connect(g);g.connect(bus);s.start(t);s.stop(t+dur+0.02)}
-const T0=()=>ac?ac.currentTime:0;
+const T0=(d)=>ac?ac.currentTime+(d||0):0;
 const SE={
-  step(v){const t=T0();noise(t,0.07,{vol:0.05+v*0.12,f:380,attack:0.003});tone(85,t,0.07,{vol:0.03+v*0.06})},
-  pop(){const t=T0();noise(t,0.18,{vol:0.6,type:"bandpass",f:600,to:2600,q:0.8,attack:0.002});tone(160,t,0.18,{type:"square",vol:0.18,to:60,lp:1200})},
-  slap(){const t=T0();noise(t,0.12,{vol:0.45,f:900,attack:0.001});tone(220,t,0.1,{type:"triangle",vol:0.2,to:110})},
-  scream(level,pitch){const t=T0();const f=(pitch||900)*(0.9+Math.random()*0.2),dur=0.5+level*0.9;
-    tone(f,t,dur,{type:"sawtooth",vol:0.06+level*0.14,to:f*(1.25+level*0.35),attack:0.02,lp:3200,vib:30+level*40});
-    tone(f*1.5,t,dur*0.9,{type:"sawtooth",vol:0.03+level*0.06,to:f*2,attack:0.02,lp:4200,vib:40});
-    noise(t,dur,{vol:0.08+level*0.2,type:"bandpass",f:f*2.2,q:2,attack:0.02})},
-  laugh(){const t=T0();for(let i=0;i<5;i++)tone(320-i*12,t+i*0.13,0.1,{type:"triangle",vol:0.14,to:260})},
-  wa(){const t=T0();tone(260,t,0.25,{type:"square",vol:0.2,to:520,lp:1600});noise(t,0.2,{vol:0.3,f:1200})},
-  faint(){const t=T0();tone(600,t,0.9,{type:"sine",vol:0.15,to:120,attack:0.02,vib:20})},
-  meh(){const t=T0();tone(200,t,0.35,{type:"triangle",vol:0.14,to:150})},
-  perfect(){const t=T0();[880,1175,1568].forEach((f,i)=>tone(f,t+0.05+i*0.06,0.3,{type:"square",vol:0.07,lp:5000}))},
-  denture(){const t=T0();for(let i=0;i<4;i++)tone(2600+i*300,t+0.15+i*0.05,0.04,{type:"square",vol:0.07})},
-  door(){const t=T0();tone(140,t,0.6,{type:"sawtooth",vol:0.06,to:90,lp:700,attack:0.05})},
-  bell(){const t=T0();[1047,784].forEach((f,i)=>tone(f,t+i*0.35,0.8,{vol:0.18}))},
-  whoosh(){const t=T0();noise(t,0.8,{vol:0.4,type:"bandpass",f:300,to:3500,q:0.7})},
-  pass(i){const t=T0();const f=[523,587,659,784,880,988,1047,1175,1319,1568,1760,2093][Math.min(i,11)];tone(f,t,0.25,{type:"triangle",vol:0.18})},
-  fanfare(){const t=T0();[[523,0],[659,.12],[784,.24],[1047,.36],[988,.62],[1047,.74],[1319,.86]].forEach(([f,d])=>{tone(f,t+d,0.34,{type:"square",vol:0.1,lp:3500});tone(f/2,t+d,0.32,{type:"triangle",vol:0.14})})}
+  step(){const t=T0();noise(t,0.08,{vol:0.1,f:420,attack:0.003});tone(80,t,0.08,{vol:0.05})},
+  whisper(v){const t=T0();noise(t,0.9,{vol:0.05+v*0.07,type:"bandpass",f:2600,to:1800,q:3,attack:0.3})},
+  giggle(v){const t=T0();for(let i=0;i<4;i++)tone(700-i*20,t+i*0.11,0.08,{type:"triangle",vol:0.04+v*0.05,to:600})},
+  creak(v){const t=T0();tone(180+Math.random()*60,t,0.6,{type:"sawtooth",vol:0.04+v*0.06,to:260,lp:900,attack:0.08,vib:14})},
+  rattle(v){const t=T0();for(let i=0;i<6;i++)noise(t+i*0.06,0.05,{vol:0.12+v*0.22,f:900,attack:0.002});tone(120,t,0.4,{type:"square",vol:0.03+v*0.05,lp:600})},
+  buzz(v){const t=T0();tone(100,t,0.25,{type:"sawtooth",vol:0.06+v*0.07,lp:1400});noise(t,0.2,{vol:0.05+v*0.06,type:"highpass",f:4000})},
+  heart(v){const t=T0();tone(55,t,0.12,{vol:0.2+v*0.3,to:40});tone(52,t+0.16,0.12,{vol:0.15+v*0.25,to:38})},
+  breath(v){const t=T0();noise(t,0.7,{vol:0.05+v*0.08,f:700,to:300,attack:0.25})},
+  sting(lv){const t=T0();const v=0.55+lv*0.09;
+    noise(t,0.6,{vol:v,f:3000,to:400,attack:0.002});tone(110,t,0.6,{type:"sawtooth",vol:v*0.5,to:55,lp:2500});
+    [523,554,587,622].forEach(f=>tone(f*2,t,0.7,{type:"sawtooth",vol:v*0.12,lp:5000,vib:30}));
+    tone(900,t+0.02,0.7,{type:"sawtooth",vol:v*0.25,to:1400,lp:3500,vib:60})},
+  myScream(){const t=T0(0.08);const f=900+Math.random()*200;tone(f,t,1.0,{type:"sawtooth",vol:0.18,to:f*1.6,attack:0.02,lp:3200,vib:60});noise(t,0.9,{vol:0.2,type:"bandpass",f:2200,q:2,attack:0.02})},
+  calm(){const t=T0(0.05);tone(660,t,0.25,{type:"triangle",vol:0.1});tone(880,t+0.1,0.3,{type:"triangle",vol:0.08})},
+  perfect(){const t=T0(0.05);[880,1175,1568].forEach((f,i)=>tone(f,t+i*0.06,0.3,{type:"square",vol:0.07,lp:5000}))},
+  slap(){const t=T0();noise(t,0.12,{vol:0.6,f:900,attack:0.001});tone(220,t,0.1,{type:"triangle",vol:0.25,to:110})},
+  door(){const t=T0();noise(t,0.15,{vol:0.6,type:"highpass",f:900,attack:0.001});tone(90,t,0.3,{vol:0.4,to:50})},
+  chime(){const t=T0();[[659,0],[523,.4],[587,.8],[392,1.2]].forEach(([f,d])=>{tone(f,t+d,1.1,{vol:0.18,attack:0.01});tone(f*2,t+d,0.6,{vol:0.04})})},
+  fanfare(){const t=T0();[[523,0],[659,.12],[784,.24],[1047,.36],[988,.62],[1047,.74],[1319,.86]].forEach(([f,d])=>{tone(f,t+d,0.34,{type:"square",vol:0.1,lp:3500});tone(f/2,t+d,0.32,{type:"triangle",vol:0.14})})},
+  sad(){const t=T0();[[392,0],[370,.35],[349,.7],[330,1.05]].forEach(([f,d])=>tone(f,t+d,0.6,{type:"sawtooth",vol:0.08,lp:1200}))}
 };
-/* BGM：不気味なオルゴールと低音。客が近いほど心臓の音が速くなる */
-let bgmMode="idle",near=0;
+/* BGM：不気味な持続音とオルゴール。レベルが上がるほど低音が重くなり、驚かしの直前はすっと静かになる */
+let bgmMode="idle",tension=0,hush=0;
 function startBgm(){
   const hz=m=>440*Math.pow(2,(m-69)/12);
-  let next=ac.currentTime+0.1,step=0,lastMode="",beat=ac.currentTime+0.5;
-  const mel=[69,72,76,75,72,69,68,71, 69,72,76,79,77,76,75,72, 69,72,76,75,72,69,68,64, 65,68,71,75,74,71,68,0];
-  const bass=[45,45,41,41,44,44,40,40];
+  let next=ac.currentTime+0.1,step=0,lastMode="";
+  const box=[81,0,84,0,88,87,84,0, 81,0,84,0,83,0,80,0, 81,0,84,88,91,89,88,84, 86,0,83,0,80,0,0,0];
   setInterval(()=>{
     if(bgmMode!==lastMode){lastMode=bgmMode;step=0;next=Math.max(next,ac.currentTime+0.05)}
     while(next<ac.currentTime+0.3){
       let dur;
-      if(bgmMode==="play"||bgmMode==="idle"){dur=60/(bgmMode==="play"?96:80)/2;
-        const m=mel[step%32];if(m)tone(hz(m+12),next,0.9,{type:"sine",vol:0.07,bus:bgmBus,vib:4});
-        if(m&&step%2===0)tone(hz(m+24),next,0.4,{type:"triangle",vol:0.025,bus:bgmBus});
-        if(step%4===0)tone(hz(bass[(step/4)%8]),next,dur*3.8,{type:"triangle",vol:0.24,bus:bgmBus,attack:0.05});
-        if(step%16===0)tone(hz(45-12),next,dur*15,{type:"sawtooth",vol:0.05,bus:bgmBus,lp:300,attack:0.6});
-        if(bgmMode==="play"&&step%8===6)noise(next,0.4,{vol:0.04,type:"bandpass",f:2000+Math.random()*2000,q:4,attack:0.1,bus:bgmBus});
-      }else if(bgmMode==="result"){dur=60/120/2;
+      if(bgmMode==="idle"){dur=60/72/2;const m=box[step%32];if(m)tone(hz(m),next,1.2,{type:"sine",vol:0.06,bus:bgmBus});
+        if(step%8===0)tone(hz(45),next,dur*7.5,{type:"triangle",vol:0.12,bus:bgmBus,attack:0.2})}
+      else if(bgmMode==="play"){dur=60/60/2;const q=1-hush;
+        if(step%8===0){tone(hz(33),next,dur*8.5,{type:"sawtooth",vol:0.07*q*(0.6+tension*0.7),bus:bgmBus,lp:220+tension*220,attack:0.8});
+          tone(hz(34+(tension>0.5?1:0)),next,dur*8.5,{type:"sine",vol:0.12*q,bus:bgmBus,attack:0.8})}
+        if(step%16===4&&q>0.5)tone(hz(box[(step/2)%32]||81),next,1.6,{type:"sine",vol:0.04*q,bus:bgmBus,vib:6});
+        if(step%6===3&&Math.random()<0.4*q)noise(next,0.8,{vol:0.03*q,type:"bandpass",f:1500+Math.random()*2500,q:6,attack:0.3,bus:bgmBus})}
+      else if(bgmMode==="result"){dur=60/112/2;
         if(step%8===0)[[57,60,64],[53,57,60],[55,59,62],[57,60,64]][(step/8)%4].forEach(m=>tone(hz(m),next,dur*7,{type:"triangle",vol:0.08,bus:bgmBus,attack:0.05}));
-        if(step%2===0)tone(hz([69,72,76,81][(step/2)%4]),next,dur*0.9,{type:"square",vol:0.045,bus:bgmBus,lp:3000});
-      }else{dur=0.25}
+        const m=box[step%32];if(m&&step%2===0)tone(hz(m-12),next,0.6,{type:"sine",vol:0.06,bus:bgmBus})}
+      else{dur=0.25}
       step++;next+=dur;}
-    // 心臓の音
-    if(bgmMode==="play"&&near>0.05){const iv=Math.max(0.32,1.1-near*0.8);
-      while(beat<ac.currentTime+0.3){tone(55,beat,0.12,{vol:0.25+near*0.35,to:40,bus:bgmBus});tone(52,beat+0.16,0.12,{vol:0.18+near*0.3,to:38,bus:bgmBus});beat+=iv}}
-    else beat=Math.max(beat,ac.currentTime+0.2);
   },100);
 }
 
@@ -210,8 +226,8 @@ function startBgm(){
 let actionsTimer=null;
 function showActions(text){
   const url=location.href.split("#")[0];
-  shareA.href="https://twitter.com/intent/tweet?text="+encodeURIComponent(text+"\n#ひらめき文庫 #学園祭のおばけ役")+"&url="+encodeURIComponent(url);
-  clearTimeout(actionsTimer);actionsTimer=setTimeout(()=>{actions.hidden=false},700);
+  shareA.href="https://twitter.com/intent/tweet?text="+encodeURIComponent(text+"\n#ひらめき文庫 #学園祭のおばけ屋敷")+"&url="+encodeURIComponent(url);
+  clearTimeout(actionsTimer);actionsTimer=setTimeout(()=>{actions.hidden=false},800);
 }
 function hideActions(){clearTimeout(actionsTimer);actions.hidden=true}
 for(const b of actions.querySelectorAll("a,button"))b.addEventListener("pointerdown",e=>e.stopPropagation());
@@ -221,14 +237,12 @@ againBtn.addEventListener("click",e=>{e.stopPropagation();initAudio();reset();st
 let renderer;
 try{renderer=new THREE.WebGLRenderer({antialias:true})}catch(e){msg.textContent="この端末では3Dが動きませんでした";return}
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 stage.prepend(renderer.domElement);
-const camera=new THREE.PerspectiveCamera(55,9/16,0.01,3000);
+const camera=new THREE.PerspectiveCamera(62,9/16,0.02,200);
 const mat=(c,o)=>new THREE.MeshLambertMaterial(Object.assign({color:c},o||{}));
 const basic=(c,o)=>new THREE.MeshBasicMaterial(Object.assign({color:c},o||{}));
-function box(w,h,d,c,x,y,z,parent,shadow){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),typeof c==="number"?mat(c):c);m.position.set(x,y,z);
-  if(shadow!==false){m.castShadow=true;m.receiveShadow=true}parent.add(m);return m}
-function ball(r,c,x,y,z,parent){const m=new THREE.Mesh(new THREE.SphereGeometry(r,18,14),typeof c==="number"?mat(c):c);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m}
+function box(w,h,d,c,x,y,z,parent){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),typeof c==="number"?mat(c):c);m.position.set(x,y,z);parent.add(m);return m}
+function ball(r,c,x,y,z,parent){const m=new THREE.Mesh(new THREE.SphereGeometry(r,18,14),typeof c==="number"?mat(c):c);m.position.set(x,y,z);parent.add(m);return m}
 function canvasTex(w,h,draw){const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new THREE.CanvasTexture(c);t.userData={c};return t}
 function textCanvas(text,{size=110,color="#fff",stroke="#1f1030",font="Dela Gothic One",h=200}={}){
   const c=document.createElement("canvas");let g=c.getContext("2d");const F=`900 ${size}px "${font}", "Zen Kaku Gothic New", sans-serif`;
@@ -237,404 +251,265 @@ function textCanvas(text,{size=110,color="#fff",stroke="#1f1030",font="Dela Goth
   if(stroke){g.lineWidth=size*0.16;g.strokeStyle=stroke;g.lineJoin="round";g.strokeText(text,w/2,h/2)}
   g.fillStyle=color;g.fillText(text,w/2,h/2);return c}
 function sprite(text,scale,opts){opts=opts||{};const c=textCanvas(text,opts);
-  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),depthTest:false,transparent:true,fog:false}));
-  s.scale.set(scale*c.width/640,scale*c.height/640,1);s.renderOrder=10;return s}
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true}));
+  s.scale.set(scale*c.width/640,scale*c.height/640,1);return s}
 const glowTex=(c1,c2)=>canvasTex(128,128,(g)=>{const gr=g.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,c1);gr.addColorStop(.3,c2);gr.addColorStop(1,"rgba(0,0,0,0)");g.fillStyle=gr;g.fillRect(0,0,128,128)});
-const TEX={orange:glowTex("rgba(255,230,180,1)","rgba(255,140,40,.7)"),white:glowTex("rgba(255,255,255,1)","rgba(220,230,255,.5)"),
-  ring:canvasTex(128,128,(g)=>{g.strokeStyle="rgba(255,190,120,1)";g.lineWidth=8;g.beginPath();g.arc(64,64,54,0,7);g.stroke()})};
-function glowSprite(tex,size){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,fog:false,blending:THREE.AdditiveBlending}));s.scale.set(size,size,1);return s}
-const fx=[];
-function addFx(s,parent,o){parent.add(s);const f=Object.assign({s,parent,t:0,life:1,vel:new THREE.Vector3(),grav:0,grow:0,base:s.scale.x,ratio:s.scale.y/s.scale.x,op:1},o);fx.push(f);return f}
-function clearFx(){for(const f of fx)f.parent.remove(f.s);fx.length=0}
-function popText(parent,text,pos,color,scale,life,vel){const s=sprite(text,scale,{size:100,color,stroke:"#1f1030"});s.position.copy(pos);return addFx(s,parent,{life:life||1.2,vel:vel||new THREE.Vector3(0,0.5,0)})}
+const TEX={orange:glowTex("rgba(255,230,180,1)","rgba(255,140,40,.7)"),red:glowTex("rgba(255,200,200,1)","rgba(255,30,30,.8)"),green:glowTex("rgba(220,255,230,1)","rgba(60,255,140,.6)")};
+function glowSprite(tex,size){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));s.scale.set(size,size,1);return s}
 
 /* ---------- 人物 ---------- */
 const SKIN=0xf2d3b5;
 function makePerson(o){
-  const P=Object.assign({h:1,shirt:0x2b3550,pants:0x252c40,hair:0x1d1d22,skirt:false,hairStyle:"short",glasses:false,bald:false},o);
-  const g=new THREE.Group();g.scale.setScalar(P.h);
+  const P=Object.assign({shirt:0x2b3550,pants:0x252c40,hair:0x1d1d22,skin:SKIN,hairStyle:"short",glasses:false},o);
+  const g=new THREE.Group();
   const body=new THREE.Group();g.add(body);
-  const legs=[];for(const x of[-0.13,0.13]){const l=new THREE.Group();l.position.set(x,0.78,0);body.add(l);box(0.17,0.76,0.19,P.pants,0,-0.38,0,l);box(0.19,0.08,0.28,0x1a1a1a,0,-0.74,0.05,l);legs.push(l)}
-  if(P.skirt){const sk=new THREE.Mesh(new THREE.CylinderGeometry(0.27,0.4,0.42,12),mat(P.pants));sk.position.y=0.86;sk.castShadow=true;body.add(sk)}
+  for(const x of[-0.13,0.13]){box(0.17,0.76,0.19,P.pants,x,0.4,0,body)}
   const upper=new THREE.Group();upper.position.set(0,0.78,0);body.add(upper);
   box(0.58,0.68,0.32,P.shirt,0,0.36,0,upper);
   const head=new THREE.Group();head.position.set(0,0.98,0);upper.add(head);
-  ball(0.25,SKIN,0,0,0,head);
-  const hair=new THREE.Group();head.add(hair);
-  if(!P.bald){const hb=new THREE.Mesh(new THREE.SphereGeometry(0.27,18,12,0,Math.PI*2,0,Math.PI*(P.hairStyle==="long"?0.62:0.5)),mat(P.hair));hb.position.set(0,0.02,-0.03);hb.rotation.x=-0.25;hb.castShadow=true;hair.add(hb);
-    if(P.hairStyle==="long"){box(0.5,0.5,0.14,P.hair,0,-0.22,-0.17,hair)}
-    if(P.hairStyle==="pomp"){const p=ball(0.16,P.hair,0,0.24,0.14,hair);p.scale.set(1.2,0.9,1.8)}
-    if(P.hairStyle==="pig"){for(const x of[-0.27,0.27])ball(0.09,P.hair,x,0.02,-0.05,hair)}}
-  else{const r=new THREE.Mesh(new THREE.TorusGeometry(0.2,0.05,6,16,Math.PI),mat(0xdddddd));r.rotation.set(0,Math.PI/2,0);r.position.set(0,0.0,-0.02);hair.add(r)}
-  const spikes=[];for(let i=0;i<7;i++){const a=i/7*Math.PI*2;const s=new THREE.Mesh(new THREE.ConeGeometry(0.05,0.3,5),mat(P.bald?0xdddddd:P.hair));
-    s.position.set(Math.cos(a)*0.13,0.3,Math.sin(a)*0.13-0.02);s.rotation.set(Math.sin(a)*0.3,0,-Math.cos(a)*0.3);s.visible=false;hair.add(s);spikes.push(s)}
-  // 顔
-  const fN=new THREE.Group(),fS=new THREE.Group(),fL=new THREE.Group(),fK=new THREE.Group();head.add(fN);head.add(fS);head.add(fL);head.add(fK);
-  for(const x of[-0.085,0.085]){ball(0.028,0x1f2430,x,0.02,0.23,fN);
-    const w=ball(0.06,basic(0xffffff),x,0.04,0.21,fS);w.scale.z=0.5;ball(0.022,0x1f2430,x,0.04,0.245,fS);
-    const lb=new THREE.Mesh(new THREE.TorusGeometry(0.035,0.012,6,12,Math.PI),mat(0x1f2430));lb.position.set(x,0.02,0.235);fL.add(lb);
-    box(0.07,0.015,0.02,0x1f2430,x,0.03,0.24,fK,false)}
-  const mS=ball(0.07,0x5a1a1a,0,-0.11,0.2,fS);mS.scale.set(0.9,1.3,0.4);
-  const mL=new THREE.Mesh(new THREE.TorusGeometry(0.06,0.014,6,12,Math.PI),mat(0x7a2e2e));mL.rotation.z=Math.PI;mL.position.set(0,-0.08,0.235);fL.add(mL);
-  box(0.09,0.014,0.02,0x7a2e2e,0.02,-0.1,0.24,fK,false);
-  if(P.glasses){for(const x of[-0.085,0.085]){const gl=new THREE.Mesh(new THREE.TorusGeometry(0.055,0.008,6,16),mat(0x1f2430));gl.position.set(x,0.02,0.25);head.add(gl)}}
-  const arms=[];for(const x of[-0.38,0.38]){const a=new THREE.Group();a.position.set(x,0.62,0);upper.add(a);box(0.14,0.58,0.14,P.shirt,0,-0.28,0,a);ball(0.075,SKIN,0,-0.6,0,a);arms.push(a)}
-  const p={g,body,upper,head,hair,spikes,legs,arms,faces:{n:fN,s:fS,l:fL,k:fK},P};
-  setFace(p,"n");return p}
-function setFace(p,k){for(const n in p.faces)p.faces[n].visible=(n===k)}
+  ball(0.25,P.skin,0,0,0,head);
+  const hb=new THREE.Mesh(new THREE.SphereGeometry(0.27,18,12,0,Math.PI*2,0,Math.PI*(P.hairStyle==="long"?0.62:0.5)),mat(P.hair));hb.position.set(0,0.02,-0.03);hb.rotation.x=-0.25;head.add(hb);
+  if(P.hairStyle==="long"){box(0.5,0.62,0.14,P.hair,0,-0.25,-0.16,head)}
+  const bangs=P.bangs?box(0.46,0.42,0.05,P.hair,0,-0.1,0.25,head):null;
+  const eyes=new THREE.Group();head.add(eyes);
+  for(const x of[-0.085,0.085]){const w=ball(0.05,basic(P.eyeWhite||0xffffff),x,0.03,0.215,eyes);w.scale.z=0.5;ball(0.02,basic(P.pupil||0x111111),x,0.03,0.24,eyes)}
+  const mouth=ball(0.07,basic(0x3a0a0a),0,-0.11,0.2,head);mouth.scale.set(1,1.3,0.4);
+  if(P.glasses){for(const x of[-0.085,0.085]){const gl=new THREE.Mesh(new THREE.TorusGeometry(0.055,0.008,6,16),mat(0x1f2430));gl.position.set(x,0.03,0.25);head.add(gl)}}
+  const arms=[];for(const x of[-0.38,0.38]){const a=new THREE.Group();a.position.set(x,0.62,0);upper.add(a);box(0.14,0.58,0.14,P.shirt,0,-0.28,0,a);ball(0.075,P.skin,0,-0.6,0,a);arms.push(a)}
+  return {g,body,upper,head,arms,eyes,mouth,bangs}}
 
-/* ---------- お化け屋敷 ---------- */
-const house=new THREE.Scene();house.background=new THREE.Color(0x1a1028);house.fog=new THREE.Fog(0x1a1028,7,24);
-const amb=new THREE.HemisphereLight(0x8a7ac0,0x2a1a30,0.55);house.add(amb);
-const nook=new THREE.PointLight(0x7a8cff,0.7,5,2);nook.position.set(0.6,2.2,0.4);house.add(nook);
-// 驚かすベストな位置の目印（床のテープ）
-const tape=new THREE.Mesh(new THREE.PlaneGeometry(2.6,0.12),basic(0xff3a4a));tape.rotation.x=-Math.PI/2;tape.position.set(-0.45,0.015,0);house.add(tape);
-const tapeG=glowSprite(TEX.orange,0.01);
-const floorTex=canvasTex(256,256,(g)=>{g.fillStyle="#5a4632";g.fillRect(0,0,256,256);g.strokeStyle="rgba(30,20,10,.6)";g.lineWidth=3;for(let x=0;x<=256;x+=32){g.beginPath();g.moveTo(x,0);g.lineTo(x,256);g.stroke()}});
-floorTex.wrapS=floorTex.wrapT=THREE.RepeatWrapping;floorTex.repeat.set(3,12);
-const fl=new THREE.Mesh(new THREE.PlaneGeometry(7,30),new THREE.MeshLambertMaterial({map:floorTex}));fl.rotation.x=-Math.PI/2;fl.position.set(0,0,-8);fl.receiveShadow=true;house.add(fl);
-const CARD=0x8a6a48,CURT=0x2a1a36;const lanterns=[];
-// 段ボールの壁と黒いカーテン
-const cardTex=canvasTex(256,256,(g)=>{g.fillStyle="#9a7650";g.fillRect(0,0,256,256);g.strokeStyle="rgba(60,40,20,.45)";g.lineWidth=2;for(let y=0;y<256;y+=8){g.beginPath();g.moveTo(0,y);g.lineTo(256,y);g.stroke()}
-  g.fillStyle="rgba(150,20,20,.85)";g.font="bold 60px sans-serif";g.fillText("たすけて",20,140);g.fillRect(40,170,12,60);g.fillRect(150,160,10,80)});
-for(let z=-22;z<=3;z+=2.5){const left=box(0.12,2.6,2.48,new THREE.MeshLambertMaterial({map:cardTex}),-1.9,1.3,z,house);
-  if(z>-3&&z<2)continue;box(0.12,2.6,2.48,CURT,1.9,1.3,z,house)}
-box(4,0.1,30,0x2a1e38,0,2.65,-8,house,false);
-// 天井の飾り：紙のおばけ、クモの巣、ひも
-for(let i=0;i<14;i++){const z=-21+i*1.6,x=(Math.random()-.5)*2.6;
-  const str=box(0.012,0.5+Math.random()*0.4,0.012,0x888888,x,2.4,z,house,false);
-  if(i%3===0){const pg_=new THREE.Group();pg_.position.set(x,1.95,z);house.add(pg_);
-    const c=new THREE.Mesh(new THREE.ConeGeometry(0.18,0.42,10,1,true),new THREE.MeshLambertMaterial({color:0xf0f0f8,side:THREE.DoubleSide,emissive:0x202028}));pg_.add(c);
-    ball(0.13,0xf0f0f8,0,0.2,0,pg_);for(const ex of[-0.05,0.05])ball(0.022,0x111111,ex,0.22,0.12,pg_);lanterns.push({pk:pg_,lg:{intensity:0},ph:Math.random()*6})}
-  else{const strip=new THREE.Mesh(new THREE.PlaneGeometry(0.12,0.9),new THREE.MeshLambertMaterial({color:i%2?0x5a2a7a:0xff7a1a,side:THREE.DoubleSide}));strip.position.set(x,2.15,z);strip.rotation.y=Math.random()*3;house.add(strip)}}
-const webTex=canvasTex(256,256,(g)=>{g.strokeStyle="rgba(230,230,240,.7)";g.lineWidth=2;for(let a=0;a<8;a++){g.beginPath();g.moveTo(0,0);g.lineTo(Math.cos(a*Math.PI/16)*256,Math.sin(a*Math.PI/16)*256);g.stroke()}
-  for(let r=30;r<256;r+=30){g.beginPath();g.arc(0,0,r,0,Math.PI/2);g.stroke()}});
-for(const [x,z,ry] of[[-1.84,-6,Math.PI/2],[1.84,-12,-Math.PI/2],[-1.84,-16,Math.PI/2]]){const w=new THREE.Mesh(new THREE.PlaneGeometry(1.2,1.2),new THREE.MeshBasicMaterial({map:webTex,transparent:true,depthWrite:false}));w.position.set(x,2.0,z);w.rotation.y=ry;house.add(w)}
-// 吊るし物：カボチャのランタン
-for(let i=0;i<6;i++){const z=-20+i*3.3,x=i%2?-1.35:1.35;
-  const pk=new THREE.Group();pk.position.set(x,2.15,z);house.add(pk);
-  const pm=ball(0.24,basic(0xff8a1e),0,0,0,pk);pm.scale.set(1.15,0.9,1.15);
-  box(0.05,0.12,0.05,0x3a6a2a,0,0.24,0,pk,false);
-  for(const ex of[-0.09,0.09]){const e=new THREE.Mesh(new THREE.ConeGeometry(0.045,0.07,3),basic(0x2a1000));e.position.set(ex,0.05,0.25);e.rotation.z=Math.PI;pk.add(e)}
-  box(0.18,0.04,0.02,0x2a1000,0,-0.08,0.26,pk,false);
-  const lg=new THREE.PointLight(0xff8a2a,0.9,4.2,2);pk.add(lg);const gs=glowSprite(TEX.orange,1.4);gs.material.opacity=0.55;pk.add(gs);lanterns.push({pk,lg,ph:Math.random()*6})}
-// 隠れ場所：ついたて
-box(0.9,1.9,0.08,CARD,1.35,0.95,0.55,house);
-// 入口の黒幕（客はここから入ってくる）
-{const cm=new THREE.MeshLambertMaterial({color:0x120a1a,side:THREE.DoubleSide});for(let i=0;i<9;i++){const st=new THREE.Mesh(new THREE.PlaneGeometry(0.44,2.6),cm);st.position.set(-1.75+i*0.44,1.3,-9.2+(i%2)*0.05);house.add(st)}
- const es=sprite("入口",0.6,{size:100,color:"#ffcf9a",stroke:"#3a0a0a"});es.material.depthTest=true;es.position.set(-0.4,2.35,-9.1);house.add(es)}
-const sign=sprite("2年B組 おばけ屋敷",0.9,{size:90,color:"#ffcf9a",stroke:"#3a0a0a"});sign.material.depthTest=true;sign.position.set(0,2.35,-21.5);house.add(sign);
-// 出口の非常灯
-const exitL=new THREE.Mesh(new THREE.PlaneGeometry(0.7,0.25),basic(0x3aff8a));exitL.position.set(0,2.3,4.4);exitL.rotation.y=Math.PI;house.add(exitL);
+/* ---------- おばけ屋敷 ---------- */
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x07050c);scene.fog=new THREE.Fog(0x07050c,3,13);
+scene.add(new THREE.HemisphereLight(0x8070b0,0x1a1020,0.32));
+const floorTex=canvasTex(256,256,(g)=>{g.fillStyle="#4a3a2a";g.fillRect(0,0,256,256);g.strokeStyle="rgba(20,12,6,.6)";g.lineWidth=3;for(let x=0;x<=256;x+=32){g.beginPath();g.moveTo(x,0);g.lineTo(x,256);g.stroke()}});
+floorTex.wrapS=floorTex.wrapT=THREE.RepeatWrapping;floorTex.repeat.set(2,14);
+const fl=new THREE.Mesh(new THREE.PlaneGeometry(4,34),new THREE.MeshLambertMaterial({map:floorTex}));fl.rotation.x=-Math.PI/2;fl.position.set(0,0,-13);scene.add(fl);
+const cardTex=canvasTex(256,256,(g)=>{g.fillStyle="#7a5e40";g.fillRect(0,0,256,256);g.strokeStyle="rgba(40,26,12,.45)";g.lineWidth=2;for(let y=0;y<256;y+=8){g.beginPath();g.moveTo(0,y);g.lineTo(256,y);g.stroke()}
+  g.fillStyle="rgba(150,20,20,.8)";g.font="bold 46px sans-serif";g.fillText("でぐちは",40,90);g.fillText("ないよ",70,150);g.fillRect(60,170,10,60)});
+const wallMat=new THREE.MeshLambertMaterial({map:cardTex}),curtMat=mat(0x1e1428);
+let wi=0;for(let z=2;z>=-30;z-=2.4){box(0.1,2.6,2.38,wi%3===0?wallMat:curtMat,-1.6,1.3,z,scene);box(0.1,2.6,2.38,wi%3===1?wallMat:curtMat,1.6,1.3,z,scene);wi++}
+box(3.4,0.1,34,0x1a1226,0,2.65,-13,scene);
+for(let i=0;i<16;i++){const z=1-i*1.9,x=(Math.random()-.5)*2.2;const st=new THREE.Mesh(new THREE.PlaneGeometry(0.1,0.8),new THREE.MeshLambertMaterial({color:i%2?0x5a2a7a:0xff7a1a,side:THREE.DoubleSide}));st.position.set(x,2.2,z);st.rotation.y=Math.random()*3;scene.add(st)}
+const lamps=[];
+function lamp(x,y,z,color,inten,dist){const l=new THREE.PointLight(color,inten,dist||4,2);l.position.set(x,y,z);scene.add(l);
+  const g=glowSprite(color===0x3aff8a?TEX.green:color===0xff3030?TEX.red:TEX.orange,0.5);g.position.set(x,y,z);g.material.opacity=0.7;scene.add(g);
+  const o={l,g,base:inten,ph:Math.random()*6};lamps.push(o);return o}
+const torch=new THREE.SpotLight(0xfff2d0,1.05,9,0.55,0.6,1.4);scene.add(torch);scene.add(torch.target);
+const nearL=new THREE.PointLight(0xfff0d8,0.22,3.5,2);scene.add(nearL);
 
-/* ---------- おばけ（自分） ---------- */
-const ghost=new THREE.Group();house.add(ghost);ghost.scale.setScalar(0.85);
-const HIDE=new THREE.Vector3(1.55,0,1.15),OUT=new THREE.Vector3(0.62,0,0.1);
-ghost.position.copy(HIDE);
-const sheetMat=new THREE.MeshLambertMaterial({color:0xf4f7ff,emissive:0x222833});
-const sheet=new THREE.Mesh(new THREE.ConeGeometry(0.48,1.55,18,1,true),sheetMat);sheet.position.y=0.88;sheet.castShadow=true;ghost.add(sheet);
-const gHead=ball(0.3,sheetMat,0,1.62,0,ghost);
-const gEyes=new THREE.Group();ghost.add(gEyes);for(const x of[-0.1,0.1]){const e=ball(0.05,basic(0x111111),x,1.66,0.27,gEyes);e.scale.set(1,1.5,0.5)}
-const gMouth=ball(0.07,basic(0x111111),0,1.5,0.27,ghost);gMouth.scale.set(1.2,0.6,0.4);
-const gDizzy=new THREE.Group();ghost.add(gDizzy);gDizzy.visible=false;
-for(const x of[-0.1,0.1]){for(const r of[0.6,-0.6]){const b=box(0.1,0.02,0.02,basic(0x111111),x,1.66,0.29,gDizzy,false);b.rotation.z=r}}
-const tenkan=new THREE.Mesh(new THREE.ConeGeometry(0.11,0.16,3),mat(0xffffff));tenkan.position.set(0,1.88,0.18);tenkan.rotation.x=0.3;ghost.add(tenkan);
-const gArms=[];for(const x of[-0.4,0.4]){const a=new THREE.Group();a.position.set(x,1.25,0);ghost.add(a);const s=new THREE.Mesh(new THREE.ConeGeometry(0.12,0.6,10),sheetMat);s.position.y=-0.25;s.rotation.z=Math.PI;a.add(s);a.rotation.z=x<0?0.5:-0.5;gArms.push(a)}
-// こんにゃくの竿
-const rod=new THREE.Group();rod.position.set(0.35,1.3,0.1);ghost.add(rod);
-const pole=box(0.04,0.04,1.6,0x6a4a2a,0,0.35,-0.75,rod,false);pole.rotation.x=-0.45;
-const lineG=new THREE.Group();lineG.position.set(0,0.7,-1.45);rod.add(lineG);
-box(0.01,0.7,0.01,0xcccccc,0,-0.35,0,lineG,false);
-const konnyaku=box(0.22,0.3,0.06,new THREE.MeshPhongMaterial({color:0x6e6a66,shininess:90,specular:0x888888}),0,-0.78,0,lineG,false);
-for(let i=0;i<6;i++)ball(0.012,0x2a2826,(Math.random()-.5)*0.16,-0.78+(Math.random()-.5)*0.22,0.035,lineG);
-const gLight=new THREE.PointLight(0xa8c4ff,0.0,3,2);gLight.position.set(0,1.6,0.6);ghost.add(gLight);
-
-/* ---------- 客 ---------- */
-const TYPES={
-  kid:{name:"ちびっこ",n:1,speed:3.2,people:[{h:0.62,shirt:0xff8fa0,pants:0x3a5ac8,hairStyle:"pig",hair:0x3a2a1a,skirt:true}],pitch:1500,win:1.35},
-  couple:{name:"カップル",n:2,speed:2.9,pause:0.45,people:[{shirt:0x3a5a8a,pants:0x2a2a30,hairStyle:"short"},{h:0.95,shirt:0xe8c8a8,pants:0x6a4a8a,skirt:true,hairStyle:"long",hair:0x5a3a20}],pitch:1100,win:1},
-  friends:{name:"友だち3人組",n:3,speed:3.0,pause:0.35,people:[{shirt:0xffffff,pants:0x2b3550},{h:0.97,shirt:0xffffff,pants:0x2b3550,hairStyle:"long"},{h:1.02,shirt:0xffffff,pants:0x2b3550}],pitch:1150,win:1},
-  yankee:{name:"ヤンキー",n:1,speed:3.8,people:[{shirt:0x1a1a1a,pants:0x1a1a1a,hairStyle:"pomp",hair:0xe0b040}],pitch:700,win:0.85,tough:true},
-  jii:{name:"おじいちゃん",n:1,speed:2.3,pause:0.5,people:[{h:0.93,shirt:0x8a7a5a,pants:0x5a5040,bald:true,glasses:true}],pitch:800,win:1.1,denture:true},
-  sensei:{name:"先生",n:1,speed:2.5,pause:1,boss:true,people:[{shirt:0x56677a,pants:0x3b4654,hair:0x6a6a6a,glasses:true}],pitch:650,win:0.75}};
-function lineup(){const mid=["couple","friends","yankee","jii","couple","friends","kid","yankee"].sort(()=>Math.random()-.5);return ["kid",...mid,"sensei"]}
-let guests=[],gi=0,cur=null,live=[];
-function spawnGuest(type){
-  const T=TYPES[type];const grp={type,T,members:[],z:-7.2,speed:T.speed*(0.92+Math.random()*0.16),state:"walk",pauseAt:null,pauseT:0,pauses:0,tapped:false,turnT:0,res:null,shakeT:0};
-  T.people.forEach((pp,i)=>{const m=makePerson(pp);house.add(m.g);const off=T.n===1?0:(i-(T.n-1)/2);m.off={x:-0.35+off*0.55,z:-Math.abs(off)*0.45};m.g.rotation.y=0;grp.members.push(m)});
-  // 懐中電灯
-  const lead=grp.members[0];const fl=new THREE.SpotLight(0xfff2cc,2.2,9,0.45,0.6,1.5);fl.position.set(0.25,1.25,0.2);fl.castShadow=false;lead.g.add(fl);
-  fl.target.position.set(0.1,0,3.2);lead.g.add(fl.target);grp.light=fl;
-  const lamp=glowSprite(TEX.white,0.35);lamp.position.set(0.25,1.15,0.25);lead.g.add(lamp);
-  lead.arms[1].rotation.x=-1.1;
-  const spill=new THREE.PointLight(0xfff0d0,0.9,3.6,2);spill.position.set(0,2.3,0.6);lead.g.add(spill);
-  // フェイント（立ち止まって見回す）
-  if(T.pause&&Math.random()<T.pause){grp.pauseAt=-1.0-Math.random()*1.8;grp.pauseT=0.35+Math.random()*0.5}
-  if(T.boss){grp.pauseAt=-3.6;grp.pauseT=0.6;grp.pause2=-1.3}
-  placeGuest(grp);live.push(grp);return grp}
-function placeGuest(grp){for(const m of grp.members){m.g.position.set(m.off.x,0,grp.z+m.off.z)}}
-function removeGuest(grp){if(!grp)return;for(const m of grp.members)house.remove(m.g);const i=live.indexOf(grp);if(i>=0)live.splice(i,1)}
+/* ---------- 5つのレベル ---------- */
+const ST=[0,-5.2,-10.4,-15.6,-21];
+const L=[];
+// Lv1 受付
+{const z=ST[0]-1.8;const g=new THREE.Group();scene.add(g);
+  box(1.3,0.75,0.6,0x6a4a30,0.55,0.375,z,g);box(1.32,0.02,0.62,0xf0f0f0,0.55,0.76,z,g);
+  const sign=sprite("受付",0.5,{size:100,color:"#fff",stroke:"#3a0a0a"});sign.position.set(0.55,1.1,z+0.3);g.add(sign);
+  const p=makePerson({shirt:0xd8d8e0,pants:0x2b3550,hairStyle:"long",hair:0x111111,skin:0xd4d6dc,bangs:true});p.g.position.set(0.7,-0.25,z-0.45);g.add(p.g);
+  const lp=lamp(0.9,1.6,z+0.4,0xff8a2a,0.6,3);
+  L.push({name:"受付",sub:"うつむいた受付係",g,actor:p,light:lp,cueKind:"whisper",scareSay:"「いらっしゃいませぇぇ！」",
+    focus(){return p.head.getWorldPosition(new THREE.Vector3())},
+    pose(k,t){p.upper.rotation.x=1.1*(1-k)+0.12*k;p.g.position.x=0.7-0.4*k;p.g.position.z=z-0.45+k*1.3;p.g.position.y=-0.25+k*0.05;p.arms.forEach(a=>a.rotation.x=-1.0*(1-k)-2.2*k);
+      if(p.bangs)p.bangs.position.y=-0.1+k*0.24;p.head.rotation.z=Math.sin(t*30)*0.05*k}})}
+// Lv2 天井のこんにゃく
+{const z=ST[1]-1.1;const g=new THREE.Group();g.position.set(0.05,4.2,z);scene.add(g);
+  box(0.012,1.2,0.012,0xcccccc,0,-0.6,0,g);
+  box(0.32,0.42,0.08,new THREE.MeshPhongMaterial({color:0x4a4744,shininess:60,specular:0x555555}),0,-1.25,0,g);
+  for(let i=0;i<8;i++)ball(0.015,0x2a2826,(Math.random()-.5)*0.24,-1.25+(Math.random()-.5)*0.32,0.045,g);
+  const lp=lamp(-0.9,2.1,z,0xff8a2a,0.5,3);
+  L.push({name:"天井",sub:"ギシギシ揺れるひも",g,actor:null,light:lp,cueKind:"creak",scareSay:"ペチッ！",camSlap:true,
+    focus(){return new THREE.Vector3(g.position.x,g.position.y-1.25,g.position.z)},
+    pose(k,t){g.position.y=4.2-(4.2-2.78)*k;g.position.z=z+k*1.18;g.position.x=0.05-0.05*k;g.rotation.z=Math.sin(t*9)*0.25*(1-k)}})}
+// Lv3 掃除用具ロッカー
+{const z=ST[2]-1.3;const g=new THREE.Group();g.position.set(-1.05,0,z);g.rotation.y=Math.PI/2;scene.add(g);
+  box(0.75,1.9,0.55,0x7a8a96,0,0.95,-0.05,g);
+  const door=new THREE.Group();door.position.set(-0.375,0,0.24);g.add(door);box(0.74,1.86,0.04,0x8a9aa6,0.37,0.95,0,door);
+  for(let i=0;i<4;i++)box(0.4,0.03,0.05,0x5a6a76,0.37,1.6-i*0.06,0.02,door);
+  const p=makePerson({shirt:0x2a2a30,pants:0x2a2a30,hairStyle:"short",skin:0xc8e8c8,pupil:0xaa0000});p.g.position.set(0,0,-0.05);g.add(p.g);
+  box(0.04,1.5,0.04,0xa08050,0.32,1.2,0.1,p.g);
+  const lp=lamp(0.9,2.0,z+0.6,0xff3030,0.45,3);
+  const lv={name:"ロッカー",sub:"掃除用具入れがガタガタ",g,actor:p,light:lp,cueKind:"rattle",fakes:1,scareSay:"「うおおおお！」",door,
+    focus(){return p.head.getWorldPosition(new THREE.Vector3())},
+    pose(k,t){door.rotation.y=-k*2.0;p.g.position.z=-0.05+k*1.05;p.g.position.x=-k*0.35;p.g.rotation.y=-Math.PI/2*Math.min(1,k*1.3);p.arms.forEach(a=>a.rotation.x=-2.5*k)}};L.push(lv)}
+// Lv4 理科室の人体模型
+{const z=ST[3]-1.6;const g=new THREE.Group();g.position.set(0.85,0,z);scene.add(g);
+  box(0.5,0.08,0.5,0x3a3a3a,0,0.04,0,g);
+  const half=new THREE.Group();g.add(half);
+  box(0.12,0.8,0.18,0xd8b8a0,-0.1,0.48,0,half);box(0.12,0.8,0.18,0xb84040,0.1,0.48,0,half);
+  box(0.26,0.66,0.3,0xd8b8a0,-0.14,1.2,0,half);box(0.26,0.66,0.3,0xb84040,0.14,1.2,0,half);
+  for(let i=0;i<5;i++)box(0.27,0.04,0.31,0xe8d8c8,0.14,1.0+i*0.1,0.005,half);
+  ball(0.08,0x8a2030,0.1,1.32,0.14,half);ball(0.06,0x6a8a40,0.18,1.15,0.14,half);
+  const hd=new THREE.Group();hd.position.set(0,1.82,0);half.add(hd);
+  const hl=new THREE.Mesh(new THREE.SphereGeometry(0.23,16,12,0,Math.PI),mat(0xd8b8a0));hl.rotation.y=Math.PI;hd.add(hl);
+  hd.add(new THREE.Mesh(new THREE.SphereGeometry(0.23,16,12,0,Math.PI),mat(0xb84040)));
+  ball(0.045,basic(0xffffff),-0.08,0.03,0.2,hd);ball(0.05,basic(0xffffff),0.08,0.03,0.2,hd);
+  const glowE=glowSprite(TEX.red,0.5);glowE.position.set(0.08,0.03,0.25);glowE.visible=false;hd.add(glowE);
+  const mo=ball(0.06,basic(0x3a0a0a),0,-0.1,0.19,hd);mo.scale.set(1.2,0.6,0.4);
+  for(const x of[-0.24,0.24])box(0.1,0.6,0.1,x<0?0xd8b8a0:0xb84040,x,1.15,0,half);
+  half.rotation.y=-1.3;
+  const lp=lamp(-0.6,2.1,z+0.5,0xffe8c0,0.7,4);
+  L.push({name:"人体模型",sub:"理科室から借りてきた",g,actor:null,light:lp,cueKind:"flicker",fakes:2,scareSay:"「ニチャァ……」",hd,glowE,mo,
+    focus(){return hd.getWorldPosition(new THREE.Vector3())},
+    pose(k,t){half.rotation.y=-1.3*(1-k)+0.05*k;g.position.x=0.85-0.5*k;g.position.z=z+k*0.6;hd.rotation.z=k*0.35;glowE.visible=k>0.2;mo.scale.y=0.6+k*1.4}})}
+// Lv5 出口と先生
+{const z=ST[4]-1.6;const g=new THREE.Group();scene.add(g);
+  const ex=new THREE.Mesh(new THREE.PlaneGeometry(0.9,0.32),basic(0x3aff8a));ex.position.set(0,2.25,z-0.8);g.add(ex);
+  const exs=sprite("出口",0.42,{size:100,color:"#0a3a1a",stroke:null});exs.position.set(0,2.25,z-0.78);g.add(exs);
+  const bd=sprite("おつかれさまでした♪",0.7,{size:90,color:"#fff6c0",stroke:"#3a2a0a"});bd.position.set(0,1.55,z-0.75);g.add(bd);
+  for(let i=0;i<9;i++){const st=new THREE.Mesh(new THREE.PlaneGeometry(0.36,2.6),new THREE.MeshLambertMaterial({color:0x120a1a,side:THREE.DoubleSide}));st.position.set(-1.45+i*0.36,1.3,z-0.85);g.add(st)}
+  lamp(0,2.2,z-0.4,0x3aff8a,0.55,3);
+  const p=makePerson({shirt:0x56677a,pants:0x3b4654,hairStyle:"short",hair:0x6a6a6a,glasses:true});p.g.position.set(1.9,0,z+0.6);p.g.rotation.y=-Math.PI/2;g.add(p.g);
+  p.mouth.scale.set(1.3,0.35,0.4);
+  L.push({name:"出口",sub:"やっと出口……",g,actor:p,light:null,cueKind:"steps",scareSay:"「下校時刻すぎてるぞ」",teacher:true,
+    focus(){return p.head.getWorldPosition(new THREE.Vector3())},
+    pose(k,t){p.g.position.x=1.9-1.6*k;p.g.position.z=z+0.6+k*0.25;p.g.rotation.y=-Math.PI/2+k*1.35}})}
 
 /* ---------- 状態 ---------- */
-let state="idle",timers=[],total=0,combo=0,bestCombo=0,perfects=0,results=[],shake=0,ghostState="hide",ghostT=0,swing=0;
+let state="idle",timers=[],lv=0,score=0,bpm=70,results=[],shake=0,camZ=0,walkT=0,walkFrom=0,walkTo=0,scareAt=0,cueAt=0,lvT=0,tapped=null,phase="",camKick=0,fakeTimes=[];
 const later=(fn,ms)=>timers.push(setTimeout(fn,ms));
 const clearAll=()=>{timers.forEach(clearTimeout);timers=[]};
-let active=house,travel=null;
-const CAM={pos:new THREE.Vector3(1.8,2.55,3.9),look:new THREE.Vector3(-1.0,0.75,-6.5)};
-const camLook=CAM.look.clone();camera.position.copy(CAM.pos);
-function judge(text,sub){judgeEl.innerHTML=text+(sub?`<small>${sub}</small>`:"");judgeEl.classList.remove("on");void judgeEl.offsetWidth;judgeEl.classList.add("on")}
+const lookTarget=new THREE.Vector3();
+function show(el,html){el.innerHTML=html;el.classList.remove("on");void el.offsetWidth;el.classList.add("on")}
 function flash(op,dur){flashEl.style.transition="none";flashEl.style.opacity=String(op);requestAnimationFrame(()=>{flashEl.style.transition=`opacity ${dur||0.5}s`;flashEl.style.opacity="0"})}
-function updHud(){guestEl.textContent=Math.min(10,gi+1);dbEl.textContent=total;comboEl.textContent=combo>=2?combo:"-"}
+function redFlash(){redvEl.style.transition="none";redvEl.style.opacity="1";requestAnimationFrame(()=>{redvEl.style.transition="opacity .9s";redvEl.style.opacity="0"})}
+function setBpm(v){bpm=Math.round(v);bpmEl.textContent=bpm;heartEl.style.setProperty("--beat",(60/Math.max(50,bpm)).toFixed(2)+"s")}
+function updHud(){lvEl.textContent=Math.min(5,lv+1);scoreEl.textContent=score.toLocaleString("ja-JP")}
+function resetPoses(){for(const l of L){l.k=0;l.scaring=false;l.leaving=false;l._shake=0;l.flick=0;l.pose(0,0)}}
 
 function reset(){
-  clearAll();hideActions();clearFx();for(const g of [...live])removeGuest(g);live=[];guests=[];cur=null;
-  state="idle";bgmMode="idle";active=house;travel=null;total=0;combo=0;bestCombo=0;perfects=0;results=[];gi=0;near=0;
-  ghost.position.copy(HIDE);ghostState="hide";gDizzy.visible=false;gEyes.visible=true;ghost.rotation.set(0,-0.5,0);gLight.intensity=0;
-  camera.position.copy(CAM.pos);camLook.copy(CAM.look);
-  topEl.hidden=true;distEl.innerHTML="";distEl.classList.remove("slam");
-  msg.textContent="タップでお化け屋敷 開店";rankEl.textContent="2年B組　おばけ屋敷";
+  clearAll();hideActions();state="idle";phase="";bgmMode="idle";lv=0;score=0;results=[];setBpm(70);shake=0;camKick=0;tension=0;hush=0;
+  camZ=ST[0]+2.6;resetPoses();warnEl.hidden=false;topEl.hidden=true;listEl.hidden=true;distEl.innerHTML="";distEl.classList.remove("slam");
+  msg.textContent="タップで入場";rankEl.textContent="2年B組　おばけ屋敷";
 }
 function start(){
-  if(state!=="idle")return;state="play";bgmMode="play";topEl.hidden=false;updHud();
-  guests=lineup().map(t=>({t}));SE.bell();
-  msg.textContent="";rankEl.textContent="客が目の前に来た瞬間にタップ！";
-  later(()=>{if(state==="play")rankEl.textContent=""},4500);
-  later(nextGuest,600);
+  if(state!=="idle")return;warnEl.hidden=true;topEl.hidden=false;updHud();state="walk";bgmMode="play";
+  msg.textContent="";rankEl.textContent="";SE.door();later(()=>beginLevel(0),300);
 }
-function nextGuest(){
-  if(state!=="play")return;
-  if(gi>=guests.length){finishAll();return}
-  const t=guests[gi].t;cur=spawnGuest(t);guests[gi]=cur;updHud();SE.door();
-  msg.textContent=t==="sensei"?"最後の客は……先生！？":`${gi+1}組目：${cur.T.name}`;
-  if(t==="sensei")judge("ラスト","最後の客は先生");
+function beginLevel(i){
+  lv=i;updHud();state="walk";phase="walk";tapped=null;tension=i/4;hush=0;
+  const l=L[i];show(titleEl,`<b>Lv.${i+1}　${l.name}</b><span>${l.sub}</span>`);
+  walkFrom=camZ;walkTo=ST[i]+0.4;walkT=0;
+  later(()=>{state="wait";lvT=0;phase="wait";
+    const wait=2.6+Math.random()*2.4+i*0.35;scareAt=wait;cueAt=wait-1.4;
+    fakeTimes=[];for(let f=0;f<(l.fakes||0);f++)fakeTimes.push(0.8+Math.random()*Math.max(0.3,cueAt-1.4));
+  },1500);
 }
-/* 判定：いま目の前(z=0)まであと何秒か */
-function scare(){
-  if(state!=="play"||!cur||cur.tapped||cur.state==="gone")return;
-  cur.tapped=true;
-  const sp=cur.speed,dt=(0-cur.z)/sp; // 正：早い　負：遅い
-  const w=cur.T.win;
-  let grade;
-  if(cur.z<-5){grade="early"}
-  else if(dt>0.34*w)grade="early";
-  else if(dt<-0.34*w)grade="late";
-  else{const a=Math.abs(dt);grade=a<0.08*w?"perfect":a<0.18*w?"great":"good"}
-  if(cur.state==="pause"&&grade!=="early")grade="early";
-  ghostOut();
-  resolve(grade,dt);
+function doScare(){
+  const l=L[lv];state="scare";phase="scare";hush=0;
+  SE.sting(lv);if(l.cueKind==="rattle")SE.door();
+  l.scaring=true;
+  if(l.camSlap)later(()=>{SE.slap();camKick=Math.max(camKick,0.6)},180);
+  flash(l.teacher?0.6:0.85,0.35);shake=0.9;
+  show(sayEl,l.scareSay);
+  if(!tapped)later(()=>{if(state==="scare"&&!tapped){tapped={t:99};judgeLevel(99,false)}},2000);
+  else if(!results[lv])judgeLevel(tapped.t-scareAt,false);
+  else{ // 先に押してしまっていた：油断したところに直撃
+    later(()=>{SE.myScream();redFlash();shake=Math.max(shake,1.2);camKick=1;msg.textContent="ぎゃあああ！！"},120);
+    nextAfter(1700)}
 }
-function ghostOut(){ghostState="out";ghostT=0;SE.pop();swing=1;gLight.intensity=1.4}
-function resolve(grade,dt){
-  const g=cur;g.res=grade;
-  let db=0,label="",sub="";
-  if(grade==="early"){g.state="laugh";combo=0;SE.laugh();label="バレバレ〜";sub="早すぎ！";
-    g.members.forEach(m=>{setFace(m,"l");m.arms[0].rotation.x=-1.4});
-    popText(house,"バレバレ〜",new THREE.Vector3(-0.3,2.3,g.z),"#ffe08a",0.8,1.6);
-    later(()=>{ghostState="sad";popText(house,"しゅん……",ghost.position.clone().add(new THREE.Vector3(0,2.3,0)),"#aab",0.8,1.4)},500);
-    later(()=>{if(g.state==="laugh"){g.state="exit"}},700)}
-  else if(grade==="late"){g.state="turn";combo=0;label="逆に驚かされた";sub="遅すぎ！";
-    g.members.forEach(m=>{setFace(m,"k")});
-    later(()=>{SE.wa();g.members.forEach(m=>{m.arms.forEach(a=>a.rotation.x=-2.6)});popText(house,"わっ！",new THREE.Vector3(-0.2,2.3,g.z),"#fff",0.9,1.2);
-      ghostState="faint";ghostT=0;SE.faint();gDizzy.visible=true;gEyes.visible=false;gMouth.visible=false},350);
-    later(()=>{g.state="exit";g.members.forEach(m=>{setFace(m,"l");m.arms.forEach(a=>a.rotation.x=0)})},1100)}
-  else{
-    const tough=g.T.tough&&grade==="good";
-    const base={perfect:120,great:100,good:80}[grade];
-    if(grade==="perfect"){combo++;perfects++;bestCombo=Math.max(bestCombo,combo);SE.perfect()}else combo=0;
-    db=tough?45:base+(grade==="perfect"?Math.min(30,(combo-1)*6):0)+g.T.n*(grade==="good"?0:4);
-    label={perfect:"PERFECT!",great:"GREAT",good:"GOOD"}[grade];
-    sub=tough?"「……べつに、こわくねぇし」":grade==="perfect"&&combo>=2?`${combo}連続！ ${db}dB`:`${db}dB`;
-    g.state=tough?"tough":"scared";g.scareT=0;
-    const lvl=tough?0.2:{perfect:1,great:0.7,good:0.45}[grade];g.lvl=lvl;
-    shake=Math.max(shake,0.25+lvl*0.6);if(grade==="perfect")flash(0.35,0.4);
-    later(()=>{SE.slap()},60);
-    g.members.forEach((m,i)=>{setFace(m,tough?"k":"s");if(!tough){m.spikes.forEach(s=>s.visible=true);m.hair.children.forEach(c=>{if(!m.spikes.includes(c))c.visible=lvl<0.9})}
-      later(()=>SE.scream(tough?0.1:lvl,g.T.pitch*(1+i*0.15)),80+i*90)});
-    const word=tough?"……":grade==="perfect"?"ぎゃあああああ！！":grade==="great"?"きゃああ！":"ひっ！";
-    popText(house,word,new THREE.Vector3(-0.3,2.35,g.z-0.3),tough?"#fff":"#ff6b6b",tough?0.7:0.6+lvl*0.6,1.6,new THREE.Vector3(0,0.6,0));
-    if(g.T.denture&&!tough){later(()=>{SE.denture();const d=new THREE.Group();const t1=box(0.14,0.04,0.08,0xffffff,0,0,0,d,false);const t2=box(0.14,0.03,0.08,0xff9a9a,0,-0.03,0,d,false);
-      d.position.copy(g.members[0].g.position).add(new THREE.Vector3(0,1.75*g.members[0].P.h,0.25));addFx(d,house,{life:1.4,vel:new THREE.Vector3(0.8,3.2,1.6),grav:-9,spin:9});
-      popText(house,"入れ歯が！",d.position.clone().add(new THREE.Vector3(0.4,0.6,0)),"#fff",0.7,1.3)},200)}
-  }
-  total+=db;results.push({type:g.type,grade,db});updHud();
-  judge(label,sub);
-  if(grade!=="early")msg.textContent=label;
-  later(()=>{if(g.state==="scared")g.state="flee"},grade==="perfect"?650:500);
-  advance(grade==="late"?800:420);
+function nextAfter(ms){later(()=>{const l=L[lv];l.scaring=false;l.leaving=true;msg.textContent="";if(lv<4)beginLevel(lv+1);else finish()},ms)}
+function judgeLevel(dt,early){
+  if(results[lv])return;
+  const a=Math.abs(dt);let grade,pts;
+  if(early){grade="EARLY";pts=0}
+  else if(a>2){grade="MISS";pts=0}
+  else{pts=Math.round(1000*(1-a/2));grade=a<=0.1?"PERFECT":a<=0.5?"GREAT":a<=1?"GOOD":"OK"}
+  results[lv]={grade,pts,dt};score+=pts;updHud();
+  const add={PERFECT:0,GREAT:6,GOOD:16,OK:28,MISS:46,EARLY:34}[grade];
+  const nb=bpm+add-(grade==="PERFECT"?2:0);
+  const label={PERFECT:"PERFECT!",GREAT:"GREAT",GOOD:"GOOD",OK:"OK",MISS:"MISS",EARLY:"早すぎ"}[grade];
+  const sub=early?"ビビって先に押した":grade==="MISS"?"驚かされっぱなし":`${pts}点　${a<0.005?"ぴったり":dt<0?"少し早い":"少し遅い"}（${a.toFixed(2)}秒）`;
+  setBpm(nb);
+  if(early){show(judgeEl,label+`<small>${sub}</small>`);SE.calm();msg.textContent="……まだ来てないのに";return}
+  show(judgeEl,label+`<small>${sub}</small>`);
+  if(grade==="PERFECT"){SE.perfect();msg.textContent="平常心……！"}
+  else if(grade==="MISS"||grade==="OK"){SE.myScream();redFlash();shake=Math.max(shake,1.2);camKick=1;msg.textContent="ぎゃあああ！！"}
+  else{camKick=Math.max(camKick,0.4);msg.textContent=grade==="GREAT"?"……っ！":"ひっ！"}
+  nextAfter(1700);
 }
-function advance(ms){cur=null;near=0;later(()=>{if(state!=="play")return;gi++;ghostState="hide";gDizzy.visible=false;gEyes.visible=true;gMouth.visible=true;nextGuest()},ms)}
-function guestDone(g){
-  removeGuest(g);
-  if(g===cur&&!g.tapped){g.tapped=true;combo=0;results.push({type:g.type,grade:"miss",db:0});judge("スルー","気づかれずに通過");SE.meh();updHud();advance(200)}
-}
-
-/* ---------- 悲鳴の旅 ---------- */
-const LANDS=[[3,"廊下に響いた"],[30,"校舎中に響いた"],[200,"校庭の向こうまで"],[1000,"商店街が振り向いた"],[8000,"となり町まで届いた"],[60000,"県境を越えた"],
-  [400000,"富士山を越えた"],[3000000,"海を渡った"],[20000000,"地球の裏側まで"],[100000000,"宇宙に響いた"],[384000000,"月まで届いた"]];
-const MAXD=3.844e8;
-function distFor(db){const k=Math.max(0,Math.min(1,db/1250));return Math.pow(10,Math.pow(k,1.45)*Math.log10(MAXD))}
-function landTitle(d){let t="教室の外に漏れた";for(const [m,l] of LANDS)if(d>=m)t=l;return t}
-// 外の景色（夜の学校と町）
-const outside=new THREE.Scene();outside.background=new THREE.Color(0x0c0a1e);outside.fog=new THREE.Fog(0x0c0a1e,120,700);
-outside.add(new THREE.HemisphereLight(0x7a74c8,0x1a1426,0.55));
-const moonLight=new THREE.DirectionalLight(0xbfc8ff,0.45);moonLight.position.set(-60,120,40);outside.add(moonLight);
-(function(){
-  const gr=new THREE.Mesh(new THREE.PlaneGeometry(1600,1600),mat(0x1f2a1c));gr.rotation.x=-Math.PI/2;outside.add(gr);
-  const yard=new THREE.Mesh(new THREE.PlaneGeometry(60,40),mat(0x6a5a40));yard.rotation.x=-Math.PI/2;yard.position.set(0,0.02,-30);outside.add(yard);
-  box(64,11,12,0xd8d2c4,0,5.5,0,outside,false);
-  for(let fl_=0;fl_<3;fl_++)for(let x=-30;x<=30;x+=3.2){const lit=(fl_===1&&Math.abs(x-6.4)<2)||Math.random()<0.15;const w=new THREE.Mesh(new THREE.PlaneGeometry(2.2,1.5),lit?basic(fl_===1&&Math.abs(x-6.4)<2?0xff8a2a:0xffd27a):mat(0x1a2030));
-    w.position.set(x,2+fl_*3.4,-6.02);w.rotation.y=Math.PI;outside.add(w)}
-  const roofGeo=new THREE.ConeGeometry(1,1,4);roofGeo.rotateY(Math.PI/4);roofGeo.translate(0,0.5,0);
-  for(let gx=-300;gx<=300;gx+=14)for(let gz=-300;gz<=300;gz+=14){
-    if(Math.abs(gx)<44&&Math.abs(gz)<44)continue;if(Math.random()<0.3)continue;
-    const w=6+Math.random()*4,d=6+Math.random()*4,h=4+Math.random()*(Math.random()<0.1?24:4),x=gx+(Math.random()-.5)*4,z=gz+(Math.random()-.5)*4;
-    box(w,h,d,[0xb8b0a0,0xa89888,0x9aa2aa,0xc6bcab][Math.floor(Math.random()*4)],x,h/2,z,outside,false);
-    if(h<10){const rf=new THREE.Mesh(roofGeo,mat([0x4a2a24,0x2f3a4a,0x3a3a50][Math.floor(Math.random()*3)]));rf.scale.set(w*0.72+0.3,2+Math.random(),d*0.72+0.3);rf.position.set(x,h,z);outside.add(rf)}
-    if(Math.random()<0.5){const lw=new THREE.Mesh(new THREE.PlaneGeometry(1.4,1),basic(0xffd27a));lw.position.set(x,Math.min(h-1,2.2),z+d/2+0.05);outside.add(lw)}}
-  const n=700,p=new Float32Array(n*3);for(let i=0;i<n;i++){const v=new THREE.Vector3(Math.random()-.5,Math.random()*0.7+0.08,Math.random()-.5).normalize().multiplyScalar(1400);p.set([v.x,v.y,v.z],i*3)}
-  const sg=new THREE.BufferGeometry();sg.setAttribute("position",new THREE.BufferAttribute(p,3));outside.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:1.6,sizeAttenuation:false,fog:false})));
-  const mn=new THREE.Mesh(new THREE.SphereGeometry(40,24,16),basic(0xfff3c4,{fog:false}));mn.position.set(-500,420,-900);outside.add(mn);
-})();
-const wave=new THREE.Mesh(new THREE.RingGeometry(0.92,1,64),new THREE.MeshBasicMaterial({color:0xff9a3a,transparent:true,opacity:0.9,side:THREE.DoubleSide,depthWrite:false,fog:false}));
-wave.rotation.x=-Math.PI/2;wave.position.set(6.4,0.5,-8);outside.add(wave);
-const wave2=wave.clone();wave2.material=wave.material.clone();outside.add(wave2);
-// 宇宙
-const space=new THREE.Scene();space.background=new THREE.Color(0x02030a);
-space.add(new THREE.AmbientLight(0xffffff,0.3));const sunL=new THREE.DirectionalLight(0xffffff,1.1);sunL.position.set(30,20,40);space.add(sunL);
-const earthTex=canvasTex(1024,512,(g,w,h)=>{g.fillStyle="#1f5fb8";g.fillRect(0,0,w,h);g.fillStyle="#3f9a4a";
-  for(let i=0;i<26;i++){g.beginPath();g.ellipse(Math.random()*w,h*0.15+Math.random()*h*0.7,30+Math.random()*90,20+Math.random()*50,Math.random(),0,7);g.fill()}
-  g.fillStyle="#e8f0f8";g.fillRect(0,0,w,26);g.fillRect(0,h-26,w,26);
-  // 学校のある場所（P0）に弓なりの島
-  g.fillStyle="#4fae58";const cx=0.279*w,cy=0.315*h;
-  for(let i=0;i<9;i++){const t=i/8;g.beginPath();g.ellipse(cx-50+t*95,cy+40-t*80+Math.sin(t*3)*14,26-Math.abs(t-0.5)*16,16,-0.7,0,7);g.fill()}
-  g.fillStyle="#3a8a44";g.beginPath();g.ellipse(cx-120,cy-10,70,90,0,0,7);g.fill()});
-const earth=new THREE.Mesh(new THREE.SphereGeometry(10,48,32),new THREE.MeshLambertMaterial({map:earthTex}));space.add(earth);
-const P0=new THREE.Vector3(0.15,0.55,0.82).normalize();
-{const sc=glowSprite(TEX.orange,0.5);sc.position.copy(P0).multiplyScalar(10.08);space.add(sc)}
-const sRing=new THREE.Mesh(new THREE.TorusGeometry(1,0.05,8,96),new THREE.MeshBasicMaterial({color:0xff9a3a}));space.add(sRing);
-const shell=new THREE.Mesh(new THREE.SphereGeometry(1,32,20),new THREE.MeshBasicMaterial({color:0xff9a3a,transparent:true,opacity:0.18,depthWrite:false}));shell.visible=false;space.add(shell);
-const moonS=new THREE.Mesh(new THREE.SphereGeometry(2.7,32,20),mat(0xd9d6cc));moonS.position.set(-40,26,-50);space.add(moonS);
-{const n=1500,p=new Float32Array(n*3);for(let i=0;i<n;i++){const v=new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5).normalize().multiplyScalar(1500+Math.random()*500);p.set([v.x,v.y,v.z],i*3)}
-  const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.BufferAttribute(p,3));space.add(new THREE.Points(g,new THREE.PointsMaterial({color:0xffffff,size:1.4,sizeAttenuation:false})))}
-
-function finishAll(){
-  state="travelIntro";bgmMode="none";near=0;
-  const d=distFor(total);
-  msg.textContent="閉店！";rankEl.textContent="今日の悲鳴は、どこまで届いた？";
-  judge("閉店","悲鳴の合計 "+total+"dB");
-  later(()=>{flash(1,0.8);active=outside;clearFx();SE.whoosh();
-    camera.position.set(8,4,-24);camLook.set(6.4,5,-6);
-    travel={u:0,dur:2.2+0.55*Math.log10(Math.max(d,10)),d,passed:0,last:0,space:false};state="travel";bgmMode="none"},1600);
-}
-function endTravel(){
-  state="end";const d=travel.d;const title=landTitle(d);
-  SE.fanfare();bgmMode="result";
-  distEl.innerHTML=`${fmtDist(d)}<small>悲鳴が届いた距離</small><em>${title}</em>`;
-  distEl.classList.remove("slam");void distEl.offsetWidth;distEl.classList.add("slam");
-  const rank=total<450?"見習いおばけ":total<750?"人気のおばけ役":total<950?"学園祭の伝説":total<1150?"本物かもしれない":"本物だった";
-  let upd=false;if(d>1&&(!bestD||d>bestD)){bestD=d;upd=true;try{localStorage.setItem("hb-obake-dist",String(Math.round(d)))}catch(e){}}
-  msg.textContent=`悲鳴の合計 ${total}dB　PERFECT ${perfects}回`;
-  rankEl.textContent=`【${rank}】`+(upd?"　自己ベスト更新！":bestD?`　ベスト ${fmtDist(bestD)}`:"");
-  const sen=results[results.length-1];
-  const senLine=sen&&sen.grade==="perfect"?"\n最後は先生まで絶叫させた":"";
-  showActions(`学園祭のお化け屋敷でおばけ役をやったら、悲鳴が ${fmtDist(d)} 先まで届いた👻\n${title}【${rank}】${senLine}`);
+function finish(){
+  state="end";phase="end";bgmMode="none";
+  const rankT=bpm<85?"鉄の心臓":bpm<110?"肝が据わってる":bpm<150?"ふつうの高校生":bpm<190?"ノミの心臓":"心臓が口から出た";
+  later(()=>{SE.chime();bgmMode="result";flash(0.8,0.8);
+    lookTarget.set(0,1.3,-30);
+    distEl.innerHTML=`${bpm}<span style="font-size:.45em"> bpm</span><small>出口での心拍数</small><em>【${rankT}】</em>`;
+    distEl.classList.remove("slam");void distEl.offsetWidth;distEl.classList.add("slam");
+    listEl.innerHTML=L.map((l,i)=>{const r=results[i]||{grade:"MISS",pts:0};return `<div><span>Lv.${i+1}</span><span>${l.name}</span><b>${r.grade}　${r.pts}</b></div>`}).join("")+
+      `<div><span></span><span>スコア</span><b>${score.toLocaleString("ja-JP")}</b></div>`;
+    listEl.hidden=false;topEl.hidden=true;
+    let upd=[];
+    if(!bestBpm||bpm<bestBpm){bestBpm=bpm;upd.push("心拍数");try{localStorage.setItem("hb-obake-bpm",String(bpm))}catch(e){}}
+    if(score>0&&(!bestScore||score>bestScore)){bestScore=score;upd.push("スコア");try{localStorage.setItem("hb-obake-score",String(score))}catch(e){}}
+    msg.textContent=bpm<110?"先生にも動じなかった":"先生が一番こわかった";
+    rankEl.textContent=upd.length?`${upd.join("・")}ベスト更新！`:`ベスト ${bestBpm}bpm`;
+    if(bpm<110)SE.fanfare();else SE.sad();
+    const perf=results.filter(r=>r&&r.grade==="PERFECT").length;
+    showActions(`学園祭のおばけ屋敷で、驚かされる瞬間に合わせてタップ👻\n出口での心拍数 ${bpm}bpm【${rankT}】\nスコア ${score.toLocaleString("ja-JP")}点（PERFECT ${perf}回）`);
+  },1400);
 }
 
 /* ---------- 入力 ---------- */
-function press(){initAudio();if(state==="idle")start();else if(state==="play")scare()}
+function press(){initAudio();
+  if(state==="idle"){start();return}
+  if(tapped||results[lv])return;
+  if(state==="wait"){tapped={t:lvT};if(scareAt-lvT>2)judgeLevel(-(scareAt-lvT),true)}
+  else if(state==="scare"){tapped={t:lvT};judgeLevel(lvT-scareAt,false)}}
 stage.addEventListener("pointerdown",e=>{if(e.target.closest&&e.target.closest(".actions"))return;e.preventDefault();press()});
 document.addEventListener("keydown",e=>{if((e.code==="Space"||e.code==="Enter")&&(e.target===stage||e.target===document.body)){e.preventDefault();
   if(state==="end"){initAudio();reset();start();return}press()}});
 
 /* ---------- 毎フレーム ---------- */
-let last=performance.now();
-const tmp=new THREE.Vector3(),tmp2=new THREE.Vector3();
+let last=performance.now(),cueClock=0,stepClock=0;
+const look=new THREE.Vector3();
+function cue(l,v,fake){
+  const k=l.cueKind;
+  if(k==="whisper"){SE.whisper(v);if(Math.random()<0.5)SE.giggle(v);if(l.actor)l.actor.head.rotation.z=(Math.random()-.5)*0.15*v}
+  else if(k==="creak"){SE.creak(v);l.g.rotation.z=(Math.random()-.5)*0.4*v}
+  else if(k==="rattle"){SE.rattle(v);l._shake=1}
+  else if(k==="flicker"){SE.buzz(v);l.flick=0.25+v*0.2;if(fake&&l.hd)l.hd.rotation.y=0.25}
+  else if(k==="steps"){SE.step();SE.breath(v)}
+  if(!fake)SE.heart(v);
+}
 function tick(now){
-  const dt=Math.min(0.05,(now-last)/1000)*(window.__hbSpeed||1);last=now;
-  const ease=r=>1-Math.exp(-dt*r);
-  if(state==="play")window.__gt=(window.__gt||0)+dt;
-  if(active===house){
-    for(const L of lanterns){L.lg.intensity=0.75+Math.sin(now/170+L.ph)*0.12+Math.random()*0.08;L.pk.rotation.z=Math.sin(now/900+L.ph)*0.06}
-    // 客
-    for(const g of [...live]){
-      if(g.state==="walk"){
-        if(g.pauseAt!==null&&g.z>=g.pauseAt&&!g.paused){g.paused=true;g.state="pause";g.pt=0}
-        else if(g.pause2&&g.z>=g.pause2&&!g.paused2){g.paused2=true;g.state="pause";g.pt=0;g.pauseT=0.9}
-        else{g.z+=g.speed*dt;if(g.T.boss&&g.paused2)g.speed=Math.min(4.4,g.speed+dt*6)}
-      }else if(g.state==="pause"){g.pt+=dt;g.members.forEach(m=>m.g.rotation.y=Math.sin(g.pt*3.2)*0.9);if(g.light)g.light.target.position.x=Math.sin(g.pt*3.2)*2.2;
-        if(g.pt>=g.pauseT){g.state="walk";g.members.forEach(m=>m.g.rotation.y=0);g.light.target.position.x=0.1}}
-      else if(g.state==="laugh"){g.z+=dt*0.6}
-      else if(g.state==="turn"){g.members.forEach(m=>m.g.rotation.y+=(Math.PI-m.g.rotation.y)*ease(10))}
-      else if(g.state==="scared"||g.state==="tough"){g.scareT+=dt;g.members.forEach((m,i)=>{
-          const k=g.state==="tough"?0:Math.max(0,Math.sin(Math.min(1,g.scareT*2.2)*Math.PI))*0.55*g.lvl;
-          m.body.position.y=k;m.arms.forEach(a=>a.rotation.x+=((g.state==="tough"?0:-2.8)-a.rotation.x)*ease(14));
-          if(g.state==="tough"){m.legs.forEach((l,j)=>l.rotation.z=Math.sin(now/30+j)*0.12)}});
-        if(g.state==="tough"&&g.scareT>1.0){g.state="exit"}}
-      else if(g.state==="flee"){g.z+=dt*8;g.members.forEach(m=>{m.g.rotation.y+=(0.35-m.g.rotation.y)*ease(12);m.body.position.y=Math.abs(Math.sin(now/70))*0.12;
-          m.legs.forEach((l,j)=>l.rotation.x=Math.sin(now/70+j*Math.PI)*0.9)});if(g.z>5)guestDone(g)}
-      else if(g.state==="exit"){g.z+=dt*3.2;g.members.forEach(m=>{m.g.rotation.y+=(0-m.g.rotation.y)*ease(8)});if(g.z>5)guestDone(g)}
-      if(g.state==="walk"||g.state==="laugh"||g.state==="exit"){const ph=now/(260/Math.max(0.6,g.speed));g.members.forEach((m,i)=>{m.legs.forEach((l,j)=>l.rotation.x=Math.sin(ph+j*Math.PI+i)*0.5);m.body.position.y=Math.abs(Math.sin(ph+i))*0.04;
-          if(g.T.tough)m.g.rotation.y=Math.sin(ph*0.5)*0.2});
-        if(Math.floor(ph/Math.PI)!==g.lastStep){g.lastStep=Math.floor(ph/Math.PI);SE.step(Math.max(0,Math.min(1,(g.z+9)/9)))}
-        if(g.z>3.2&&g.state==="walk"&&g===cur&&state==="play")guestDone(g)}
-      placeGuest(g);if(cur===g)near=g.state==="walk"||g.state==="pause"?Math.max(0,Math.min(1,(g.z+7.2)/7.2)):0
-    }
-    // おばけ
-    ghostT+=dt;
-    let gp=HIDE,gr=-0.5;
-    if(ghostState==="out"){gp=OUT;gr=-1.15}
-    else if(ghostState==="sad"){gp=tmp.set(1.05,0,0.6);gr=-0.9}
-    else if(ghostState==="faint"){gp=tmp.set(1.1,0,0.75);gr=-0.9}
-    ghost.position.lerp(gp,ease(ghostState==="out"?22:6));ghost.rotation.y+=(gr-ghost.rotation.y)*ease(10);
-    ghost.rotation.z+=((ghostState==="faint"?-1.3:0)-ghost.rotation.z)*ease(ghostState==="faint"?5:8);
-    ghost.position.y=ghostState==="out"?Math.max(0,Math.sin(Math.min(1,ghostT*3)*Math.PI)*0.35):ghostState==="faint"?0:Math.sin(now/600)*0.04;
-    gArms.forEach((a,i)=>{const t=ghostState==="out"?(i?-1.9:1.9):(i?-0.5:0.5);a.rotation.z+=(t-a.rotation.z)*ease(14)});
-    gLight.intensity*=Math.pow(0.4,dt);
-    swing*=Math.pow(0.3,dt);lineG.rotation.x=Math.sin(now/90)*swing*0.9+Math.sin(now/700)*0.08;
-    if(ghostState==="back"){ghostState="hide"}
-    // カメラ
-    camera.position.lerp(CAM.pos,ease(3));camLook.lerp(CAM.look,ease(3));
-    if(shake>0){shake-=dt;camera.position.x+=(Math.random()-.5)*shake*0.18;camera.position.y+=(Math.random()-.5)*shake*0.18}
-    camera.lookAt(camLook);
-  }
-  // 悲鳴の旅
-  if(travel&&state==="travel"){
-    travel.u=Math.min(1,travel.u+dt/travel.dur);
-    const e=1-Math.pow(1-travel.u,2.2),D=travel.d,c=Math.pow(10,e*Math.log10(Math.max(D,1.0001)));
-    while(travel.passed<LANDS.length&&c>=LANDS[travel.passed][0]&&D>=LANDS[travel.passed][0]){
-      landEl.textContent=LANDS[travel.passed][1];landEl.classList.remove("show");void landEl.offsetWidth;landEl.classList.add("show");SE.pass(travel.passed);travel.passed++}
-    distEl.innerHTML=`${fmtDist(c)}<small>悲鳴が届いた距離</small>`;
-    if(c>2000&&!travel.space){travel.space=true;active=space;flash(1,0.6);SE.whoosh()}
-    if(active===outside){
-      const r=Math.max(1,c);wave.scale.setScalar(r);wave2.scale.setScalar(Math.max(1,r*0.7));
-      wave.material.opacity=0.9;wave2.material.opacity=0.5;
-      const h=Math.min(1100,4+r*0.7);camera.position.lerp(tmp.set(6.4+h*0.3,h,-8-14-h*0.75),ease(5));camLook.lerp(tmp2.set(6.4,Math.max(0,5-r*0.05),-6),ease(5));camera.lookAt(camLook)}
-    else{
-      const km=c/1000,th=Math.min(Math.PI,km/6371);
-      if(th<Math.PI*0.999){sRing.visible=true;shell.visible=false;const rr=10.05*Math.sin(th);sRing.scale.setScalar(Math.max(0.05,rr));
-        sRing.position.copy(P0).multiplyScalar(10.05*Math.cos(th));sRing.lookAt(P0.clone().multiplyScalar(100));
-        const ch=Math.max(1.6,rr*3.4),cp=tmp.copy(P0).multiplyScalar(10.05+ch).add(tmp2.set(ch*0.35,ch*0.2,0));
-        if(!travel.snapped){travel.snapped=true;camera.position.copy(cp);camLook.copy(P0).multiplyScalar(10.05)}
-        camera.position.lerp(cp,ease(5));camLook.lerp(tmp2.copy(P0).multiplyScalar(10.05*Math.cos(th)),ease(5))}
-      else{sRing.visible=false;shell.visible=true;const extra=(km-20015)/(384400-20015);const R=10.2+Math.max(0,extra)*60;shell.scale.setScalar(R);
-        camera.position.lerp(tmp.set(0,R*0.6+20,R*1.5+40),ease(3));camLook.lerp(tmp2.set(-10,8,-12),ease(3))}
-      camera.lookAt(camLook)}
-    if(now-travel.last>400){travel.last=now;SE.scream(0.25,900+Math.random()*600)}
-    if(travel.u>=1&&!travel.done){travel.done=true;later(endTravel,300)}
-  }else if(active!==house){camera.lookAt(camLook)}
-  for(let i=fx.length-1;i>=0;i--){const f=fx[i];f.t+=dt;f.vel.y+=f.grav*dt;f.s.position.addScaledVector(f.vel,dt);
-    if(f.spin){f.s.rotation.x+=f.spin*dt;f.s.rotation.z+=f.spin*0.7*dt}
-    if(f.grow){const k=Math.max(0.01,f.base+f.grow*(f.t/f.life));f.s.scale.set(k,k*f.ratio,1)}
-    if(f.s.material)f.s.material.opacity=f.op*Math.max(0,1-Math.max(0,f.t-f.life*0.6)/(f.life*0.4));
-    if(f.t>=f.life){f.parent.remove(f.s);fx.splice(i,1)}}
-  renderer.render(active,camera);
+  const dt=Math.min(0.05,(now-last)/1000)*(window.__hbSpeed||1);last=now;const t=now/1000;
+  if(phase==="walk"){walkT=Math.min(1,walkT+dt/1.4);const e=(1-Math.cos(walkT*Math.PI))/2;camZ=walkFrom+(walkTo-walkFrom)*e;
+    stepClock+=dt;if(stepClock>0.45&&walkT<1){stepClock=0;SE.step()}}
+  if(state==="wait"){lvT+=dt;const l=L[lv];const toScare=scareAt-lvT;
+    for(let i=fakeTimes.length-1;i>=0;i--)if(lvT>=fakeTimes[i]){fakeTimes.splice(i,1);cue(l,0.7,true)}
+    if(toScare<1.4){cueClock-=dt;if(cueClock<=0){cueClock=0.34-0.14*(1-toScare/1.4);cue(l,1-toScare/1.4,false)}hush=Math.min(1,(1.4-toScare)/0.5)}
+    if(lvT>=scareAt)doScare()}
+  else if(state==="scare"){lvT+=dt}
+  for(const l of L){
+    if(l.scaring){l.k=Math.min(1,l.k+dt*9);l.pose(l.k,t)}
+    else if(l.leaving&&l.k>0){l.k=Math.max(0,l.k-dt*0.5);l.pose(l.k,t)}
+    if(l._shake){l._shake*=Math.pow(0.05,dt);if(l.cueKind==="rattle")l.g.position.x=-1.05+Math.sin(t*80)*0.025*l._shake}
+    if(l.cueKind==="creak"&&!l.scaring&&lv===1&&state==="wait")l.g.rotation.z+=(Math.sin(t*2.2)*0.08-l.g.rotation.z)*0.1}
+  for(const lp of lamps){lp.l.intensity=lp.base*(0.85+Math.sin(t*6+lp.ph)*0.08+Math.random()*0.07);lp.g.material.opacity=0.55+Math.random()*0.1}
+  const l4=L[3];if(l4.flick>0){l4.flick-=dt;l4.light.l.intensity=Math.random()<0.5?0:l4.light.base*1.5}
+  // カメラ（一人称）
+  const sway=Math.sin(t*1.3)*0.02,bob=phase==="walk"&&walkT<1?Math.abs(Math.sin(t*7))*0.04:0;
+  camKick*=Math.pow(0.08,dt);
+  camera.position.set(sway,1.55+bob-camKick*0.25,camZ+camKick*0.35);
+  if(state==="end")look.copy(lookTarget);
+  else if(phase==="scare"&&L[lv].focus&&L[lv].k>0.05)look.copy(L[lv].focus());
+  else if(phase!=="walk"&&lv===0)look.set(0.45,1.0,camZ-3);
+  else if(phase!=="walk"&&lv===1)look.set(0.05,1.75,camZ-3);
+  else if(phase!=="walk"&&lv===2)look.set(-0.65,1.2,camZ-3);
+  else if(phase!=="walk"&&lv===3)look.set(0.45,1.35,camZ-3);
+  else look.set(0.05,1.35,camZ-4);
+  if(shake>0){shake-=dt;look.x+=(Math.random()-.5)*shake*0.18;look.y+=(Math.random()-.5)*shake*0.18}
+  camLook.lerp(look,1-Math.exp(-dt*(phase==="walk"?5:phase==="scare"?22:7)));
+  camera.lookAt(camLook);
+  torch.position.set(camera.position.x+0.25,camera.position.y-0.25,camera.position.z);torch.target.position.copy(camLook);
+  nearL.position.copy(camera.position);
+  renderer.render(scene,camera);
   requestAnimationFrame(tick);
 }
+const camLook=new THREE.Vector3(0.05,1.35,-4);
 function resize(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;
   renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(stage);resize();
 reset();
-window.__hb={get state(){return state},get total(){return total},get cur(){return cur?{type:cur.type,z:cur.z,state:cur.state,speed:cur.speed,tapped:cur.tapped}:null},scare,get results(){return results},setTotal(v){total=v}};
+window.__hb={get state(){return state},get lv(){return lv},get toScare(){return (state==="wait"||state==="scare")?scareAt-lvT:null},get tapped(){return !!tapped},get results(){return results},get score(){return score},get bpm(){return bpm},press};
 requestAnimationFrame(tick);
 })();
 </script>
