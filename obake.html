@@ -320,6 +320,9 @@ for(let i=0;i<6;i++){const z=-20+i*3.3,x=i%2?-1.35:1.35;
   const lg=new THREE.PointLight(0xff8a2a,0.9,4.2,2);pk.add(lg);const gs=glowSprite(TEX.orange,1.4);gs.material.opacity=0.55;pk.add(gs);lanterns.push({pk,lg,ph:Math.random()*6})}
 // 隠れ場所：ついたて
 box(0.9,1.9,0.08,CARD,1.35,0.95,0.55,house);
+// 入口の黒幕（客はここから入ってくる）
+{const cm=new THREE.MeshLambertMaterial({color:0x120a1a,side:THREE.DoubleSide});for(let i=0;i<9;i++){const st=new THREE.Mesh(new THREE.PlaneGeometry(0.44,2.6),cm);st.position.set(-1.75+i*0.44,1.3,-9.2+(i%2)*0.05);house.add(st)}
+ const es=sprite("入口",0.6,{size:100,color:"#ffcf9a",stroke:"#3a0a0a"});es.material.depthTest=true;es.position.set(-0.4,2.35,-9.1);house.add(es)}
 const sign=sprite("2年B組 おばけ屋敷",0.9,{size:90,color:"#ffcf9a",stroke:"#3a0a0a"});sign.material.depthTest=true;sign.position.set(0,2.35,-21.5);house.add(sign);
 // 出口の非常灯
 const exitL=new THREE.Mesh(new THREE.PlaneGeometry(0.7,0.25),basic(0x3aff8a));exitL.position.set(0,2.3,4.4);exitL.rotation.y=Math.PI;house.add(exitL);
@@ -348,16 +351,16 @@ const gLight=new THREE.PointLight(0xa8c4ff,0.0,3,2);gLight.position.set(0,1.6,0.
 
 /* ---------- 客 ---------- */
 const TYPES={
-  kid:{name:"ちびっこ",n:1,speed:1.7,people:[{h:0.62,shirt:0xff8fa0,pants:0x3a5ac8,hairStyle:"pig",hair:0x3a2a1a,skirt:true}],pitch:1500,win:1.35},
-  couple:{name:"カップル",n:2,speed:1.25,pause:0.5,people:[{shirt:0x3a5a8a,pants:0x2a2a30,hairStyle:"short"},{h:0.95,shirt:0xe8c8a8,pants:0x6a4a8a,skirt:true,hairStyle:"long",hair:0x5a3a20}],pitch:1100,win:1},
-  friends:{name:"友だち3人組",n:3,speed:1.45,pause:0.35,people:[{shirt:0xffffff,pants:0x2b3550},{h:0.97,shirt:0xffffff,pants:0x2b3550,hairStyle:"long"},{h:1.02,shirt:0xffffff,pants:0x2b3550}],pitch:1150,win:1},
-  yankee:{name:"ヤンキー",n:1,speed:2.05,people:[{shirt:0x1a1a1a,pants:0x1a1a1a,hairStyle:"pomp",hair:0xe0b040}],pitch:700,win:0.85,tough:true},
-  jii:{name:"おじいちゃん",n:1,speed:0.85,pause:0.8,people:[{h:0.93,shirt:0x8a7a5a,pants:0x5a5040,bald:true,glasses:true}],pitch:800,win:1.1,denture:true},
-  sensei:{name:"先生",n:1,speed:1.1,pause:1,boss:true,people:[{shirt:0x56677a,pants:0x3b4654,hair:0x6a6a6a,glasses:true}],pitch:650,win:0.75}};
+  kid:{name:"ちびっこ",n:1,speed:3.2,people:[{h:0.62,shirt:0xff8fa0,pants:0x3a5ac8,hairStyle:"pig",hair:0x3a2a1a,skirt:true}],pitch:1500,win:1.35},
+  couple:{name:"カップル",n:2,speed:2.9,pause:0.45,people:[{shirt:0x3a5a8a,pants:0x2a2a30,hairStyle:"short"},{h:0.95,shirt:0xe8c8a8,pants:0x6a4a8a,skirt:true,hairStyle:"long",hair:0x5a3a20}],pitch:1100,win:1},
+  friends:{name:"友だち3人組",n:3,speed:3.0,pause:0.35,people:[{shirt:0xffffff,pants:0x2b3550},{h:0.97,shirt:0xffffff,pants:0x2b3550,hairStyle:"long"},{h:1.02,shirt:0xffffff,pants:0x2b3550}],pitch:1150,win:1},
+  yankee:{name:"ヤンキー",n:1,speed:3.8,people:[{shirt:0x1a1a1a,pants:0x1a1a1a,hairStyle:"pomp",hair:0xe0b040}],pitch:700,win:0.85,tough:true},
+  jii:{name:"おじいちゃん",n:1,speed:2.3,pause:0.5,people:[{h:0.93,shirt:0x8a7a5a,pants:0x5a5040,bald:true,glasses:true}],pitch:800,win:1.1,denture:true},
+  sensei:{name:"先生",n:1,speed:2.5,pause:1,boss:true,people:[{shirt:0x56677a,pants:0x3b4654,hair:0x6a6a6a,glasses:true}],pitch:650,win:0.75}};
 function lineup(){const mid=["couple","friends","yankee","jii","couple","friends","kid","yankee"].sort(()=>Math.random()-.5);return ["kid",...mid,"sensei"]}
-let guests=[],gi=0,cur=null;
+let guests=[],gi=0,cur=null,live=[];
 function spawnGuest(type){
-  const T=TYPES[type];const grp={type,T,members:[],z:-21,speed:T.speed*(0.92+Math.random()*0.16),state:"walk",pauseAt:null,pauseT:0,pauses:0,tapped:false,turnT:0,res:null,shakeT:0};
+  const T=TYPES[type];const grp={type,T,members:[],z:-7.2,speed:T.speed*(0.92+Math.random()*0.16),state:"walk",pauseAt:null,pauseT:0,pauses:0,tapped:false,turnT:0,res:null,shakeT:0};
   T.people.forEach((pp,i)=>{const m=makePerson(pp);house.add(m.g);const off=T.n===1?0:(i-(T.n-1)/2);m.off={x:-0.35+off*0.55,z:-Math.abs(off)*0.45};m.g.rotation.y=0;grp.members.push(m)});
   // 懐中電灯
   const lead=grp.members[0];const fl=new THREE.SpotLight(0xfff2cc,2.2,9,0.45,0.6,1.5);fl.position.set(0.25,1.25,0.2);fl.castShadow=false;lead.g.add(fl);
@@ -366,11 +369,11 @@ function spawnGuest(type){
   lead.arms[1].rotation.x=-1.1;
   const spill=new THREE.PointLight(0xfff0d0,0.9,3.6,2);spill.position.set(0,2.3,0.6);lead.g.add(spill);
   // フェイント（立ち止まって見回す）
-  if(T.pause&&Math.random()<T.pause){grp.pauseAt=-1.0-Math.random()*1.6;grp.pauseT=0.6+Math.random()*1.1}
-  if(T.boss){grp.pauseAt=-3.5;grp.pauseT=1.2;grp.pause2=-1.1}
-  placeGuest(grp);return grp}
+  if(T.pause&&Math.random()<T.pause){grp.pauseAt=-1.0-Math.random()*1.8;grp.pauseT=0.35+Math.random()*0.5}
+  if(T.boss){grp.pauseAt=-3.6;grp.pauseT=0.6;grp.pause2=-1.3}
+  placeGuest(grp);live.push(grp);return grp}
 function placeGuest(grp){for(const m of grp.members){m.g.position.set(m.off.x,0,grp.z+m.off.z)}}
-function removeGuest(grp){if(!grp)return;for(const m of grp.members)house.remove(m.g)}
+function removeGuest(grp){if(!grp)return;for(const m of grp.members)house.remove(m.g);const i=live.indexOf(grp);if(i>=0)live.splice(i,1)}
 
 /* ---------- 状態 ---------- */
 let state="idle",timers=[],total=0,combo=0,bestCombo=0,perfects=0,results=[],shake=0,ghostState="hide",ghostT=0,swing=0;
@@ -384,7 +387,7 @@ function flash(op,dur){flashEl.style.transition="none";flashEl.style.opacity=Str
 function updHud(){guestEl.textContent=Math.min(10,gi+1);dbEl.textContent=total;comboEl.textContent=combo>=2?combo:"-"}
 
 function reset(){
-  clearAll();hideActions();clearFx();for(const g of guests)removeGuest(g);guests=[];cur=null;
+  clearAll();hideActions();clearFx();for(const g of [...live])removeGuest(g);live=[];guests=[];cur=null;
   state="idle";bgmMode="idle";active=house;travel=null;total=0;combo=0;bestCombo=0;perfects=0;results=[];gi=0;near=0;
   ghost.position.copy(HIDE);ghostState="hide";gDizzy.visible=false;gEyes.visible=true;ghost.rotation.set(0,-0.5,0);gLight.intensity=0;
   camera.position.copy(CAM.pos);camLook.copy(CAM.look);
@@ -396,7 +399,7 @@ function start(){
   guests=lineup().map(t=>({t}));SE.bell();
   msg.textContent="";rankEl.textContent="客が目の前に来た瞬間にタップ！";
   later(()=>{if(state==="play")rankEl.textContent=""},4500);
-  later(nextGuest,900);
+  later(nextGuest,600);
 }
 function nextGuest(){
   if(state!=="play")return;
@@ -404,16 +407,15 @@ function nextGuest(){
   const t=guests[gi].t;cur=spawnGuest(t);guests[gi]=cur;updHud();SE.door();
   msg.textContent=t==="sensei"?"最後の客は……先生！？":`${gi+1}組目：${cur.T.name}`;
   if(t==="sensei")judge("ラスト","最後の客は先生");
-  ghostState="hide";gDizzy.visible=false;gEyes.visible=true;gMouth.visible=true;
 }
 /* 判定：いま目の前(z=0)まであと何秒か */
 function scare(){
   if(state!=="play"||!cur||cur.tapped||cur.state==="gone")return;
   cur.tapped=true;
-  const sp=cur.T.speed,dt=(0-cur.z)/sp; // 正：早い　負：遅い
+  const sp=cur.speed,dt=(0-cur.z)/sp; // 正：早い　負：遅い
   const w=cur.T.win;
   let grade;
-  if(cur.z<-6){grade="early"}
+  if(cur.z<-5){grade="early"}
   else if(dt>0.34*w)grade="early";
   else if(dt<-0.34*w)grade="late";
   else{const a=Math.abs(dt);grade=a<0.08*w?"perfect":a<0.18*w?"great":"good"}
@@ -429,12 +431,12 @@ function resolve(grade,dt){
     g.members.forEach(m=>{setFace(m,"l");m.arms[0].rotation.x=-1.4});
     popText(house,"バレバレ〜",new THREE.Vector3(-0.3,2.3,g.z),"#ffe08a",0.8,1.6);
     later(()=>{ghostState="sad";popText(house,"しゅん……",ghost.position.clone().add(new THREE.Vector3(0,2.3,0)),"#aab",0.8,1.4)},500);
-    later(()=>{if(g.state==="laugh"){g.state="walk";g.speed=g.T.speed}},1300)}
+    later(()=>{if(g.state==="laugh"){g.state="exit"}},700)}
   else if(grade==="late"){g.state="turn";combo=0;label="逆に驚かされた";sub="遅すぎ！";
     g.members.forEach(m=>{setFace(m,"k")});
     later(()=>{SE.wa();g.members.forEach(m=>{m.arms.forEach(a=>a.rotation.x=-2.6)});popText(house,"わっ！",new THREE.Vector3(-0.2,2.3,g.z),"#fff",0.9,1.2);
       ghostState="faint";ghostT=0;SE.faint();gDizzy.visible=true;gEyes.visible=false;gMouth.visible=false},350);
-    later(()=>{g.state="walk";g.members.forEach(m=>{setFace(m,"l");m.arms.forEach(a=>a.rotation.x=0)})},1500)}
+    later(()=>{g.state="exit";g.members.forEach(m=>{setFace(m,"l");m.arms.forEach(a=>a.rotation.x=0)})},1100)}
   else{
     const tough=g.T.tough&&grade==="good";
     const base={perfect:120,great:100,good:80}[grade];
@@ -457,14 +459,13 @@ function resolve(grade,dt){
   total+=db;results.push({type:g.type,grade,db});updHud();
   judge(label,sub);
   if(grade!=="early")msg.textContent=label;
-  later(()=>{if(g.state==="scared")g.state="flee"},grade==="perfect"?900:700);
+  later(()=>{if(g.state==="scared")g.state="flee"},grade==="perfect"?650:500);
+  advance(grade==="late"?800:420);
 }
+function advance(ms){cur=null;near=0;later(()=>{if(state!=="play")return;gi++;ghostState="hide";gDizzy.visible=false;gEyes.visible=true;gMouth.visible=true;nextGuest()},ms)}
 function guestDone(g){
-  if(g!==cur)return;
-  if(!g.tapped){g.tapped=true;combo=0;results.push({type:g.type,grade:"miss",db:0});judge("スルー","気づかれずに通過");SE.meh();updHud()}
-  g.state="gone";removeGuest(g);cur=null;near=0;gi++;
-  ghostState="back";
-  later(nextGuest,700);
+  removeGuest(g);
+  if(g===cur&&!g.tapped){g.tapped=true;combo=0;results.push({type:g.type,grade:"miss",db:0});judge("スルー","気づかれずに通過");SE.meh();updHud();advance(200)}
 }
 
 /* ---------- 悲鳴の旅 ---------- */
@@ -551,31 +552,32 @@ const tmp=new THREE.Vector3(),tmp2=new THREE.Vector3();
 function tick(now){
   const dt=Math.min(0.05,(now-last)/1000)*(window.__hbSpeed||1);last=now;
   const ease=r=>1-Math.exp(-dt*r);
+  if(state==="play")window.__gt=(window.__gt||0)+dt;
   if(active===house){
     for(const L of lanterns){L.lg.intensity=0.75+Math.sin(now/170+L.ph)*0.12+Math.random()*0.08;L.pk.rotation.z=Math.sin(now/900+L.ph)*0.06}
     // 客
-    const g=cur;
-    if(g){
+    for(const g of [...live]){
       if(g.state==="walk"){
         if(g.pauseAt!==null&&g.z>=g.pauseAt&&!g.paused){g.paused=true;g.state="pause";g.pt=0}
         else if(g.pause2&&g.z>=g.pause2&&!g.paused2){g.paused2=true;g.state="pause";g.pt=0;g.pauseT=0.9}
-        else{g.z+=g.speed*dt;if(g.T.boss&&g.paused2)g.speed=Math.min(2.6,g.speed+dt*3)}
+        else{g.z+=g.speed*dt;if(g.T.boss&&g.paused2)g.speed=Math.min(4.4,g.speed+dt*6)}
       }else if(g.state==="pause"){g.pt+=dt;g.members.forEach(m=>m.g.rotation.y=Math.sin(g.pt*3.2)*0.9);if(g.light)g.light.target.position.x=Math.sin(g.pt*3.2)*2.2;
         if(g.pt>=g.pauseT){g.state="walk";g.members.forEach(m=>m.g.rotation.y=0);g.light.target.position.x=0.1}}
-      else if(g.state==="laugh"){g.z+=dt*0.3}
+      else if(g.state==="laugh"){g.z+=dt*0.6}
       else if(g.state==="turn"){g.members.forEach(m=>m.g.rotation.y+=(Math.PI-m.g.rotation.y)*ease(10))}
       else if(g.state==="scared"||g.state==="tough"){g.scareT+=dt;g.members.forEach((m,i)=>{
           const k=g.state==="tough"?0:Math.max(0,Math.sin(Math.min(1,g.scareT*2.2)*Math.PI))*0.55*g.lvl;
           m.body.position.y=k;m.arms.forEach(a=>a.rotation.x+=((g.state==="tough"?0:-2.8)-a.rotation.x)*ease(14));
           if(g.state==="tough"){m.legs.forEach((l,j)=>l.rotation.z=Math.sin(now/30+j)*0.12)}});
-        if(g.state==="tough"&&g.scareT>1.3){g.state="walk"}}
-      else if(g.state==="flee"){g.z-=dt*6;g.members.forEach(m=>{m.g.rotation.y+=(Math.PI-m.g.rotation.y)*ease(12);m.body.position.y=Math.abs(Math.sin(now/70))*0.12;
-          m.legs.forEach((l,j)=>l.rotation.x=Math.sin(now/70+j*Math.PI)*0.9)});if(g.z<-14)guestDone(g)}
-      if(g.state==="walk"||g.state==="laugh"){const ph=now/(260/Math.max(0.6,g.speed));g.members.forEach((m,i)=>{m.legs.forEach((l,j)=>l.rotation.x=Math.sin(ph+j*Math.PI+i)*0.5);m.body.position.y=Math.abs(Math.sin(ph+i))*0.04;
+        if(g.state==="tough"&&g.scareT>1.0){g.state="exit"}}
+      else if(g.state==="flee"){g.z+=dt*8;g.members.forEach(m=>{m.g.rotation.y+=(0.35-m.g.rotation.y)*ease(12);m.body.position.y=Math.abs(Math.sin(now/70))*0.12;
+          m.legs.forEach((l,j)=>l.rotation.x=Math.sin(now/70+j*Math.PI)*0.9)});if(g.z>5)guestDone(g)}
+      else if(g.state==="exit"){g.z+=dt*3.2;g.members.forEach(m=>{m.g.rotation.y+=(0-m.g.rotation.y)*ease(8)});if(g.z>5)guestDone(g)}
+      if(g.state==="walk"||g.state==="laugh"||g.state==="exit"){const ph=now/(260/Math.max(0.6,g.speed));g.members.forEach((m,i)=>{m.legs.forEach((l,j)=>l.rotation.x=Math.sin(ph+j*Math.PI+i)*0.5);m.body.position.y=Math.abs(Math.sin(ph+i))*0.04;
           if(g.T.tough)m.g.rotation.y=Math.sin(ph*0.5)*0.2});
-        if(Math.floor(ph/Math.PI)!==g.lastStep){g.lastStep=Math.floor(ph/Math.PI);SE.step(Math.max(0,Math.min(1,(g.z+14)/14)))}
-        if(g.z>3.2&&g.state==="walk"&&state==="play")guestDone(g)}
-      if(cur===g){placeGuest(g);near=g.state==="walk"||g.state==="pause"?Math.max(0,Math.min(1,(g.z+10)/10)):0}
+        if(Math.floor(ph/Math.PI)!==g.lastStep){g.lastStep=Math.floor(ph/Math.PI);SE.step(Math.max(0,Math.min(1,(g.z+9)/9)))}
+        if(g.z>3.2&&g.state==="walk"&&g===cur&&state==="play")guestDone(g)}
+      placeGuest(g);if(cur===g)near=g.state==="walk"||g.state==="pause"?Math.max(0,Math.min(1,(g.z+7.2)/7.2)):0
     }
     // おばけ
     ghostT+=dt;
@@ -632,7 +634,7 @@ function resize(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)r
   renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix()}
 new ResizeObserver(resize).observe(stage);resize();
 reset();
-window.__hb={get state(){return state},get total(){return total},get cur(){return cur?{type:cur.type,z:cur.z,state:cur.state,speed:cur.T.speed,tapped:cur.tapped}:null},scare,get results(){return results},setTotal(v){total=v}};
+window.__hb={get state(){return state},get total(){return total},get cur(){return cur?{type:cur.type,z:cur.z,state:cur.state,speed:cur.speed,tapped:cur.tapped}:null},scare,get results(){return results},setTotal(v){total=v}};
 requestAnimationFrame(tick);
 })();
 </script>
