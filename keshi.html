@@ -784,7 +784,7 @@ requestAnimationFrame(tick);
 // テスト用
 window.__hb={get state(){return state},get me(){return me},get foe(){return foe},get wins(){return wins},get results(){return results},get matchNo(){return matchNo},get craftLeft(){return craftLeft},
   setTool(t){tool=t;showStats()},apply(i,k){applyTool(i,k)},go(){startMatch()},start(){startGame()},flick(ang,p){if(state==="aim")doFlick(me,ang,maxV(me)*Math.pow(p,1.15))},maxV,
-  get bestFly(){return bestFlyGame},skipTo(n){matchNo=n;wins=n;craftLeft=6+3*n;for(let i=0;i<n;i++)results.push({foe:FOES[i].short,win:true,how:"落とした！"});enterCraft(false)},lose(){if(state==="aim")doFlick(me,Math.PI/2,maxV(me))},ring(v){ringM.visible=v}};
+  get bestFly(){return bestFlyGame},skipTo(n){matchNo=n;wins=n;craftLeft=6+3*n;for(let i=0;i<n;i++)results.push({foe:FOES[i].short,win:true,how:"落とした！"});enterCraft(false)},lose(){if(state==="aim")doFlick(me,Math.PI/2,maxV(me))},ring(v){ringM.visible=v},clearT(){clearTimers()}};
 })();
 </script>
 </body>
