@@ -45,6 +45,18 @@ h1{font-family:var(--font-display);font-weight:400;font-size:clamp(30px,7vw,52px
 .cover p{margin:0 0 0 4px;font-size:12.5px;line-height:1.6;opacity:.92}
 .chip{margin:auto 0 0 4px;align-self:flex-start;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--bulb);color:#1f2430}
 .note{color:#e9e8e0;font-size:13px;margin:0}
+/* 新刊：紹介動画つきの最新巻 */
+.feature{display:grid;grid-template-columns:minmax(0,300px) 1fr;gap:22px;align-items:center}
+.feature[hidden]{display:none}
+.reel{position:relative;aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:#0f2236;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.reel video{width:100%;height:100%;object-fit:cover;display:block}
+.snd{position:absolute;right:10px;top:10px;font:700 12px var(--font-body);border:0;border-radius:99px;padding:7px 12px;background:rgba(0,0,0,.6);color:#fff;cursor:pointer}
+.snd:focus-visible,.play:focus-visible{outline:3px solid var(--bulb);outline-offset:2px}
+.fx .new{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.14em;padding:3px 10px;border-radius:99px;background:var(--bulb);color:#1f2430}
+.fx h2{font-family:var(--font-mincho);font-weight:900;font-size:clamp(28px,5vw,40px);line-height:1.2;margin:10px 0 6px}
+.fx p{margin:0 0 16px;color:var(--ink-soft)}
+.play{display:inline-flex;align-items:center;gap:8px;font:700 16px var(--font-body);text-decoration:none;border-radius:99px;padding:12px 24px;color:#fff}
+@media (max-width:640px){.feature{grid-template-columns:1fr}.reel{max-width:320px;width:100%;margin:0 auto}.fx{text-align:center}}
 footer{border-top:3px double var(--rule);padding-top:14px;font-size:12px;color:var(--ink-soft);
   display:grid;grid-template-columns:max-content 1fr;gap:2px 16px;max-width:340px}
 footer .h{grid-column:1/-1;font-family:var(--font-mincho);font-weight:900;font-size:15px;color:var(--ink);margin-bottom:4px}
@@ -68,6 +80,12 @@ footer .h{grid-column:1/-1;font-family:var(--font-mincho);font-weight:900;font-s
     </div>
   </header>
 
+  <section class="feature" id="feature" aria-label="新刊" hidden>
+    <div class="reel"><video id="reel" muted loop playsinline autoplay preload="metadata"></video>
+      <button class="snd" id="snd" type="button" aria-pressed="false">🔇 音を出す</button></div>
+    <div class="fx"><span class="new" id="fno">新刊</span><h2 id="ftitle"></h2><p id="fdesc"></p><a class="play" id="fplay" href="#">あそぶ ▶</a></div>
+  </section>
+
   <section class="shelf" aria-label="ゲーム一覧">
     <div class="covers" id="covers"><p class="note">本棚を読み込んでいます…</p></div>
   </section>
@@ -86,6 +104,14 @@ fetch("games.json",{cache:"no-cache"}).then(r=>r.json()).then(list=>{
   document.getElementById("count").textContent=list.length;
   box.innerHTML="";
   // 新しい巻が先頭に来るように逆順で並べる
+  // 紹介動画のある一番新しい巻を「新刊」として大きく出す
+  const fg=list.map((g,i)=>({...g,vol:i+1})).reverse().find(g=>g.video);
+  if(fg){const v=document.getElementById("reel");v.poster=`${encodeURIComponent(fg.id)}.png`;v.src=fg.video;
+    document.getElementById("fno").textContent=`新刊　第${fg.vol}巻`;document.getElementById("ftitle").textContent=fg.title;
+    document.getElementById("fdesc").textContent=fg.desc||"";const pl=document.getElementById("fplay");pl.href=`${encodeURIComponent(fg.id)}.html`;pl.style.background=fg.color||"#4a5463";
+    document.getElementById("feature").hidden=false;const p=v.play();if(p&&p.catch)p.catch(()=>{});
+    const snd=document.getElementById("snd");snd.addEventListener("click",()=>{v.muted=!v.muted;if(!v.muted){v.currentTime=0;v.play().catch(()=>{})}
+      snd.textContent=v.muted?"🔇 音を出す":"🔊 音あり";snd.setAttribute("aria-pressed",String(!v.muted))})}
   list.map((g,i)=>({...g,vol:i+1})).reverse().forEach(g=>{
     const a=document.createElement("a");
     a.className="cover";a.href=`${encodeURIComponent(g.id)}.html`;
